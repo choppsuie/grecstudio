@@ -1,17 +1,22 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MusicIcon, User, Menu } from "lucide-react";
+import { MusicIcon, User } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
 
 export const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-cyber-darker/80 backdrop-blur-md border-b border-cyber-purple/20">
@@ -38,63 +43,50 @@ export const Navbar = () => {
             <Link to="/pricing" className="text-white/80 hover:text-cyber-purple transition-colors">
               Pricing
             </Link>
+            
             <div className="ml-4 flex items-center space-x-2">
-              <Button variant="outline" className="border-cyber-purple/50 hover:bg-cyber-purple/20 text-white">
-                Login
-              </Button>
-              <Button className="bg-gradient-to-r from-cyber-purple to-cyber-blue hover:opacity-90 text-white">
-                Get Started
-              </Button>
+              {user ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    className="border-cyber-purple/50 hover:bg-cyber-purple/20 text-white"
+                    asChild
+                  >
+                    <Link to="/studio">Studio</Link>
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 rounded-full">
+                        <User className="h-5 w-5 text-white" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleSignOut}>
+                        Sign Out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    className="border-cyber-purple/50 hover:bg-cyber-purple/20 text-white"
+                    asChild
+                  >
+                    <Link to="/auth">Login</Link>
+                  </Button>
+                  <Button 
+                    className="bg-gradient-to-r from-cyber-purple to-cyber-blue hover:opacity-90 text-white"
+                    asChild
+                  >
+                    <Link to="/auth">Get Started</Link>
+                  </Button>
+                </>
+              )}
             </div>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-white"
-            >
-              <Menu className="h-6 w-6" />
-            </Button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-3">
-            <Link
-              to="/"
-              className="block px-2 py-2 text-white/80 hover:bg-cyber-purple/20 rounded-md"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              to="/features"
-              className="block px-2 py-2 text-white/80 hover:bg-cyber-purple/20 rounded-md"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Features
-            </Link>
-            <Link
-              to="/pricing"
-              className="block px-2 py-2 text-white/80 hover:bg-cyber-purple/20 rounded-md"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Pricing
-            </Link>
-            <div className="pt-2 flex flex-col space-y-2">
-              <Button variant="outline" className="w-full border-cyber-purple/50 hover:bg-cyber-purple/20 text-white">
-                Login
-              </Button>
-              <Button className="w-full bg-gradient-to-r from-cyber-purple to-cyber-blue hover:opacity-90 text-white">
-                Get Started
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );
