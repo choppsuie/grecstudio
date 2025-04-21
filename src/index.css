@@ -1,88 +1,89 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Overriding the default light theme with our cyberpunk theme */
-    --background: 230 31% 15%;  /* #1A1F2C (cyber-dark) */
-    --foreground: 0 0% 100%;    /* #FFFFFF */
+    /* Cyberpunk theme with red neon */
+    --background: 236 8% 7%;      /* #131419 (cyber-dark) */
+    --foreground: 0 0% 100%;      /* #FFFFFF */
 
-    --card: 230 31% 15%;        /* #1A1F2C (cyber-dark) */
+    --card: 236 8% 7%;            /* #131419 (cyber-dark) */
     --card-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --popover: 230 31% 15%;     /* #1A1F2C (cyber-dark) */
+    --popover: 236 8% 7%;         /* #131419 (cyber-dark) */
     --popover-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --primary: 263 88% 63%;     /* #8B5CF6 (cyber-purple) */
+    --primary: 352 85% 53%;       /* #ED213A (cyber-red) */
     --primary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --secondary: 196 76% 49%;   /* #1EAEDB (cyber-blue) */
+    --secondary: 263 88% 63%;     /* #8B5CF6 (cyber-purple) */
     --secondary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --muted: 233 33% 10%;       /* #0F1319 (cyber-darker) */
-    --muted-foreground: 220 13% 85%; /* #D3E4FD (cyber-soft-blue) */
+    --muted: 240 6% 5%;           /* #0A0B0E (cyber-darker) */
+    --muted-foreground: 240 5% 65%; /* Light gray with a hint of blue */
 
-    --accent: 263 67% 86%;      /* #D6BCFA (cyber-light-purple) */
-    --accent-foreground: 230 31% 15%; /* #1A1F2C (cyber-dark) */
+    --accent: 352 80% 68%;        /* #F9636F (cyber-light-red) */
+    --accent-foreground: 240 6% 5%; /* #0A0B0E (cyber-darker) */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 232 32% 20%;
-    --input: 232 32% 20%;
-    --ring: 263 88% 63%;        /* #8B5CF6 (cyber-purple) */
+    --border: 237 11% 16%;
+    --input: 237 11% 16%;
+    --ring: 352 85% 53%;          /* #ED213A (cyber-red) */
 
-    --radius: 1rem;             /* More bubbly iOS style */
+    --radius: 1rem;               /* More bubbly iOS style */
 
-    --sidebar-background: 233 33% 10%; /* #0F1319 (cyber-darker) */
+    --sidebar-background: 240 6% 5%; /* #0A0B0E (cyber-darker) */
     --sidebar-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-primary: 263 88% 63%; /* #8B5CF6 (cyber-purple) */
+    --sidebar-primary: 352 85% 53%; /* #ED213A (cyber-red) */
     --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-accent: 196 76% 49%; /* #1EAEDB (cyber-blue) */
+    --sidebar-accent: 263 88% 63%; /* #8B5CF6 (cyber-purple) */
     --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-border: 232 32% 20%;
-    --sidebar-ring: 263 88% 63%; /* #8B5CF6 (cyber-purple) */
+    --sidebar-border: 237 11% 16%;
+    --sidebar-ring: 352 85% 53%; /* #ED213A (cyber-red) */
   }
 
-  /* We're going for a dark theme by default for the cyberpunk aesthetic */
+  /* Keep dark theme the same as root theme since we're using dark cyberpunk by default */
   .dark {
-    --background: 230 31% 15%;  /* #1A1F2C (cyber-dark) */
-    --foreground: 0 0% 100%;    /* #FFFFFF */
+    --background: 236 8% 7%;      /* #131419 (cyber-dark) */
+    --foreground: 0 0% 100%;      /* #FFFFFF */
 
-    --card: 230 31% 15%;        /* #1A1F2C (cyber-dark) */
+    --card: 236 8% 7%;            /* #131419 (cyber-dark) */
     --card-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --popover: 230 31% 15%;     /* #1A1F2C (cyber-dark) */
+    --popover: 236 8% 7%;         /* #131419 (cyber-dark) */
     --popover-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --primary: 263 88% 63%;     /* #8B5CF6 (cyber-purple) */
+    --primary: 352 85% 53%;       /* #ED213A (cyber-red) */
     --primary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --secondary: 196 76% 49%;   /* #1EAEDB (cyber-blue) */
+    --secondary: 263 88% 63%;     /* #8B5CF6 (cyber-purple) */
     --secondary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --muted: 233 33% 10%;       /* #0F1319 (cyber-darker) */
-    --muted-foreground: 220 13% 85%; /* #D3E4FD (cyber-soft-blue) */
+    --muted: 240 6% 5%;           /* #0A0B0E (cyber-darker) */
+    --muted-foreground: 240 5% 65%; /* Light gray with a hint of blue */
 
-    --accent: 263 67% 86%;      /* #D6BCFA (cyber-light-purple) */
-    --accent-foreground: 230 31% 15%; /* #1A1F2C (cyber-dark) */
+    --accent: 352 80% 68%;        /* #F9636F (cyber-light-red) */
+    --accent-foreground: 240 6% 5%; /* #0A0B0E (cyber-darker) */
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 232 32% 20%;
-    --input: 232 32% 20%;
-    --ring: 263 88% 63%;        /* #8B5CF6 (cyber-purple) */
+    --border: 237 11% 16%;
+    --input: 237 11% 16%;
+    --ring: 352 85% 53%;          /* #ED213A (cyber-red) */
 
-    --sidebar-background: 233 33% 10%; /* #0F1319 (cyber-darker) */
+    --sidebar-background: 240 6% 5%; /* #0A0B0E (cyber-darker) */
     --sidebar-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-primary: 263 88% 63%; /* #8B5CF6 (cyber-purple) */
+    --sidebar-primary: 352 85% 53%; /* #ED213A (cyber-red) */
     --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-accent: 196 76% 49%; /* #1EAEDB (cyber-blue) */
+    --sidebar-accent: 263 88% 63%; /* #8B5CF6 (cyber-purple) */
     --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-border: 232 32% 20%;
-    --sidebar-ring: 263 88% 63%; /* #8B5CF6 (cyber-purple) */
+    --sidebar-border: 237 11% 16%;
+    --sidebar-ring: 352 85% 53%; /* #ED213A (cyber-red) */
   }
 }
 
@@ -96,9 +97,9 @@
   }
 }
 
-/* Custom styles for the cyberpunk/iOS UI */
+/* Custom styles for the cyberpunk UI */
 .glass-card {
-  @apply bg-opacity-20 backdrop-blur-lg bg-cyber-darker border border-cyber-purple/20 shadow-lg;
+  @apply bg-opacity-20 backdrop-blur-lg bg-cyber-darker border border-cyber-red/20 shadow-lg;
 }
 
 .neon-glow {
@@ -107,20 +108,20 @@
 
 .neon-glow::after {
   content: '';
-  @apply absolute inset-0 rounded-md bg-gradient-to-r from-cyber-purple to-cyber-blue opacity-25 blur-md -z-10;
+  @apply absolute inset-0 rounded-md bg-gradient-to-r from-cyber-red to-cyber-purple opacity-25 blur-md -z-10;
 }
 
 .neon-border {
-  @apply border border-cyber-purple/50 shadow-[0_0_15px_rgba(139,92,246,0.5)];
+  @apply border border-cyber-red/50 shadow-[0_0_15px_rgba(237,33,58,0.5)];
 }
 
 .waveform-bar {
-  @apply bg-cyber-purple h-full w-1 rounded-full mx-[1px] opacity-80;
+  @apply bg-cyber-red h-full w-1 rounded-full mx-[1px] opacity-80;
 }
 
 /* Track styles */
 .track-row {
-  @apply border-b border-cyber-purple/20 hover:bg-cyber-darker/50 transition-all;
+  @apply border-b border-cyber-red/20 hover:bg-cyber-darker/50 transition-all;
 }
 
 /* Custom scrollbar for the cyberpunk theme */
@@ -134,9 +135,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-cyber-purple/50 rounded-full;
+  @apply bg-cyber-red/50 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-cyber-purple;
+  @apply bg-cyber-red;
 }

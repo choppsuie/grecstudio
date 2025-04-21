@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MusicIcon, User } from "lucide-react";
+import { Music4, User } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -19,28 +19,28 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-cyber-darker/80 backdrop-blur-md border-b border-cyber-purple/20">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-cyber-darker/80 backdrop-blur-md border-b border-cyber-red/20">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <div className="relative">
-              <MusicIcon className="h-8 w-8 text-cyber-purple animate-pulse-glow" />
-              <div className="absolute inset-0 bg-cyber-purple rounded-full blur-xl opacity-30 -z-10"></div>
+              <Music4 className="h-8 w-8 text-cyber-red animate-pulse-glow" />
+              <div className="absolute inset-0 bg-cyber-red rounded-full blur-xl opacity-30 -z-10"></div>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-cyber-purple to-cyber-blue bg-clip-text text-transparent">
-              CloudJam
+            <span className="text-xl font-bold bg-gradient-to-r from-cyber-red to-cyber-purple bg-clip-text text-transparent">
+              GRecStudio
             </span>
           </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex md:items-center md:space-x-6">
-            <Link to="/" className="text-white/80 hover:text-cyber-purple transition-colors">
+            <Link to="/" className="text-white/80 hover:text-cyber-red transition-colors">
               Home
             </Link>
-            <Link to="/features" className="text-white/80 hover:text-cyber-purple transition-colors">
+            <Link to="/features" className="text-white/80 hover:text-cyber-red transition-colors">
               Features
             </Link>
-            <Link to="/pricing" className="text-white/80 hover:text-cyber-purple transition-colors">
+            <Link to="/pricing" className="text-white/80 hover:text-cyber-red transition-colors">
               Pricing
             </Link>
             
@@ -49,7 +49,7 @@ export const Navbar = () => {
                 <>
                   <Button 
                     variant="outline" 
-                    className="border-cyber-purple/50 hover:bg-cyber-purple/20 text-white"
+                    className="border-cyber-red/50 hover:bg-cyber-red/20 text-white"
                     asChild
                   >
                     <Link to="/studio">Studio</Link>
@@ -71,13 +71,13 @@ export const Navbar = () => {
                 <>
                   <Button 
                     variant="outline" 
-                    className="border-cyber-purple/50 hover:bg-cyber-purple/20 text-white"
+                    className="border-cyber-red/50 hover:bg-cyber-red/20 text-white"
                     asChild
                   >
                     <Link to="/auth">Login</Link>
                   </Button>
                   <Button 
-                    className="bg-gradient-to-r from-cyber-purple to-cyber-blue hover:opacity-90 text-white"
+                    className="bg-gradient-to-r from-cyber-red to-cyber-purple hover:opacity-90 text-white"
                     asChild
                   >
                     <Link to="/auth">Get Started</Link>

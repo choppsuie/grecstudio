@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -62,14 +63,15 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors for our cyberpunk/iOS aesthetic
+				// Cyberpunk colors - replacing previous custom colors
 				cyber: {
+					"red": "#ED213A",
+					"light-red": "#F9636F",
 					"purple": "#8B5CF6",
-					"light-purple": "#D6BCFA",
-					"blue": "#1EAEDB",
-					"dark": "#1A1F2C",
-					"darker": "#0F1319",
-					"cyan": "#33C3F0",
+					"blue": "#3C71D0",
+					"dark": "#131419",
+					"darker": "#0A0B0E",
+					"cyan": "#0CFCFC",
 					"soft-blue": "#D3E4FD"
 				}
 			},
