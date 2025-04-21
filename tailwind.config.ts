@@ -61,6 +61,16 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom colors for our cyberpunk/iOS aesthetic
+				cyber: {
+					"purple": "#8B5CF6",
+					"light-purple": "#D6BCFA",
+					"blue": "#1EAEDB",
+					"dark": "#1A1F2C",
+					"darker": "#0F1319",
+					"cyan": "#33C3F0",
+					"soft-blue": "#D3E4FD"
 				}
 			},
 			borderRadius: {
@@ -84,11 +94,56 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': { 
+						opacity: 1,
+						filter: 'brightness(1) blur(0px)' 
+					},
+					'50%': { 
+						opacity: 0.8,
+						filter: 'brightness(1.2) blur(2px)' 
+					}
+				},
+				'float': {
+					'0%, 100%': { 
+						transform: 'translateY(0)' 
+					},
+					'50%': { 
+						transform: 'translateY(-10px)' 
+					}
+				},
+				'waveform': {
+					'0%': { 
+						height: '20%' 
+					},
+					'20%': { 
+						height: '60%' 
+					},
+					'40%': { 
+						height: '40%' 
+					},
+					'60%': { 
+						height: '80%' 
+					},
+					'80%': { 
+						height: '30%' 
+					},
+					'100%': { 
+						height: '20%' 
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'float': 'float 6s ease-in-out infinite',
+				'waveform': 'waveform 1.2s ease-in-out infinite'
+			},
+			backdropFilter: {
+				'none': 'none',
+				'blur': 'blur(20px)'
 			}
 		}
 	},
