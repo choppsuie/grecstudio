@@ -6,12 +6,14 @@ export type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isLoggedIn: boolean;
 };
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  isLoggedIn: false,
 });
 
 export const useAuth = () => {
