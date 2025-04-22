@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -91,7 +90,8 @@ const Profile = () => {
         setProfile({
           displayName: data.display_name || "",
           email: user?.email || "",
-          bio: data.bio || "",  // Using optional chaining since 'bio' might not exist
+          // Handle the bio field safely even if it doesn't exist in the database yet
+          bio: "",  // Default to empty string since bio doesn't exist in the database yet
           avatar: data.avatar_url || ""
         });
       }
@@ -115,11 +115,12 @@ const Profile = () => {
         throw new Error("User not authenticated");
       }
       
+      // Only update fields that exist in the database
       const { error } = await supabase
         .from('profiles')
         .update({
           display_name: profile.displayName,
-          bio: profile.bio,
+          // Remove bio field from the update as it doesn't exist in the database yet
           avatar_url: profile.avatar,
           updated_at: new Date().toISOString()  // Convert Date to string
         })
@@ -695,44 +696,3 @@ const Profile = () => {
                             <option value="small">Small</option>
                             <option value="medium" selected>Medium</option>
                             <option value="large">Large</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-8 flex justify-end">
-                  <Button
-                    className="bg-gradient-to-r from-cyber-red to-cyber-purple hover:opacity-90"
-                    onClick={handleSettingsUpdate}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Saving...
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Settings
-                      </span>
-                    )}
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-      </div>
-      
-      <Footer />
-    </div>
-  );
-};
-
-export default Profile;

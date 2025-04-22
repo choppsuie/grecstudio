@@ -1,5 +1,5 @@
 
-import { Track } from "@/components/TrackList";
+import { Track } from "@/hooks/useTrackManager";
 import AudioVisualizer from "@/components/AudioVisualizer";
 
 interface TrackTimelineProps {
