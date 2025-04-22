@@ -1,19 +1,8 @@
-
 import { useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Volume2, Mic, MusicIcon, PlayCircle, PauseCircle } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Track } from "@/hooks/useTrackManager";
 import { cn } from "@/lib/utils";
-
-export interface Track {
-  id: string;
-  name: string;
-  type: "audio" | "midi" | "vocal";
-  volume: number;
-  muted: boolean;
-  soloed: boolean;
-  color: string;
-}
 
 interface TrackListProps {
   tracks: Track[];
