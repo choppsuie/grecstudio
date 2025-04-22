@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   User, Mail, Key, Bell, Music, Settings,
-  Shield, Save, UserCircle, Mic, Headphones
+  Shield, Save, UserCircle, Mic, Headphones, Users
 } from "lucide-react";
 
 const Profile = () => {
@@ -91,7 +91,7 @@ const Profile = () => {
         setProfile({
           displayName: data.display_name || "",
           email: user?.email || "",
-          bio: data.bio || "",
+          bio: data.bio || "",  // Using optional chaining since 'bio' might not exist
           avatar: data.avatar_url || ""
         });
       }
@@ -121,7 +121,7 @@ const Profile = () => {
           display_name: profile.displayName,
           bio: profile.bio,
           avatar_url: profile.avatar,
-          updated_at: new Date()
+          updated_at: new Date().toISOString()  // Convert Date to string
         })
         .eq('id', user.id);
       
