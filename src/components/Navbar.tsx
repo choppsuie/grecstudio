@@ -60,8 +60,11 @@ export const Navbar = () => {
                         <User className="h-5 w-5 text-white" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleSignOut}>
+                    <DropdownMenuContent align="end" className="bg-cyber-darker border-cyber-purple/20">
+                      <DropdownMenuItem asChild className="cursor-pointer text-white hover:bg-cyber-purple/10">
+                        <Link to="/profile">Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-white hover:bg-cyber-red/10">
                         Sign Out
                       </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -40,6 +40,11 @@ const MixerControls = ({
     setVolume(value[0]);
   };
   
+  const handleStop = () => {
+    onStop?.();
+    setPlayPosition(0);
+  };
+  
   return (
     <div className="bg-cyber-darker border-t border-cyber-purple/20 p-4 w-full">
       <div className="flex items-center justify-between">
@@ -48,7 +53,7 @@ const MixerControls = ({
             variant="ghost" 
             size="icon" 
             className="text-white hover:text-cyber-purple hover:bg-cyber-purple/10"
-            onClick={onStop}
+            onClick={handleStop}
           >
             <SkipBack className="h-5 w-5" />
           </Button>

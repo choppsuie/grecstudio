@@ -9,7 +9,13 @@ import Index from "./pages/Index";
 import Studio from "./pages/Studio";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
+import Features from "./pages/Features";
 import NotFound from "./pages/NotFound";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Support from "./pages/Support";
+import Contact from "./pages/Contact";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +32,12 @@ const App = () => (
             <Route path="/studio/:projectId" element={<Studio />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
