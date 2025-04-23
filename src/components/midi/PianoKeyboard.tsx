@@ -1,6 +1,6 @@
-
 import React, { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { useSynth } from "@/hooks/useSynth";
 
 // Define range and white/black key mapping
 const WHITE_KEYS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -47,6 +47,7 @@ type PianoKeyboardProps = {
 
 const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) => {
   const [activeNotes, setActiveNotes] = useState<number[]>([]);
+  const { playNote, stopNote } = useSynth();
 
   // Given MIDI number, return if it's a white key
   const isWhite = useCallback((note: number) => {
@@ -65,13 +66,15 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
   const handleDown = (note: number) => {
     if (!activeNotes.includes(note)) {
       setActiveNotes((prev) => [...prev, note]);
-      onNoteOn?.(note, 100); // fixed velocity
+      onNoteOn?.(note, 100);
+      playNote(note, 100); // Play sound!
     }
   };
   // Release a key
   const handleUp = (note: number) => {
     setActiveNotes((prev) => prev.filter((n) => n !== note));
     onNoteOff?.(note);
+    stopNote(note); // Stop sound!
   };
 
   // Handle mouse/touch events
