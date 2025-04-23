@@ -5,8 +5,9 @@ import TrackList from "@/components/TrackList";
 import MixerControls from "@/components/MixerControls";
 import AudioEngine from "@/components/AudioEngine";
 import { Button } from "@/components/ui/button";
-import { Plus, MessageSquare, Users } from "lucide-react";
+import { Plus, MessageSquare, Users, Mic, Music, Brain } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
 import { useTrackManager } from "@/hooks/useTrackManager";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,11 @@ import EffectsPanel from "@/components/studio/EffectsPanel";
 import NotesPanel from "@/components/studio/NotesPanel";
 import Chat from "@/components/studio/Chat";
 import CollaboratorsList from "@/components/studio/CollaboratorsList";
+import MIDIController from "@/components/midi/MIDIController";
+import VoiceChat from "@/components/voice/VoiceChat";
+import AIAssistant from "@/components/ai/AIAssistant";
+import AudioRecorder from "@/components/audio/AudioRecorder";
+import * as Tone from "tone";
 
 const Studio = () => {
   const { toast } = useToast();
@@ -26,6 +32,18 @@ const Studio = () => {
   const { tracks, updateTrack, addTrack } = useTrackManager();
   const [collaborators, setCollaborators] = useState<any[]>([]);
   const [rightPanelTab, setRightPanelTab] = useState("effects");
+  const [drawerTab, setDrawerTab] = useState<string>("midi");
+  const [projectId, setProjectId] = useState("demo-project");
+  const [toneInitialized, setToneInitialized] = useState(false);
+  
+  // Initialize Tone.js on first user interaction
+  const initializeTone = async () => {
+    if (!toneInitialized) {
+      await Tone.start();
+      setToneInitialized(true);
+      console.log("Tone.js initialized");
+    }
+  };
   
   // Fetch current project and collaborators
   useEffect(() => {
@@ -75,7 +93,11 @@ const Studio = () => {
     }
   }, [user, toast]);
   
-  const handlePlay = () => setIsPlaying(true);
+  const handlePlay = async () => {
+    await initializeTone();
+    setIsPlaying(true);
+  };
+  
   const handlePause = () => setIsPlaying(false);
   
   const handleSave = async () => {
@@ -102,6 +124,41 @@ const Studio = () => {
     });
   };
   
+  // Handle MIDI note events
+  const handleMIDINoteOn = (note: number, velocity: number) => {
+    console.log(`MIDI Note On: ${note}, velocity: ${velocity}`);
+    // You would typically use this to trigger synths or record MIDI data
+  };
+  
+  const handleMIDINoteOff = (note: number) => {
+    console.log(`MIDI Note Off: ${note}`);
+  };
+  
+  // Handle AI-generated content
+  const handleGeneratedChordProgression = (chords: string[]) => {
+    console.log("Generated chord progression:", chords);
+    // In a full implementation, you would use these chords to create/update tracks
+    toast({
+      title: "Chord Progression Generated",
+      description: `Applied progression: ${chords.join(' - ')}`,
+    });
+  };
+  
+  const handleGeneratedMelody = (notes: string[]) => {
+    console.log("Generated melody:", notes);
+    // In a full implementation, you would use these notes to create/update tracks
+    toast({
+      title: "Melody Generated",
+      description: `Applied ${notes.length} notes to the project`,
+    });
+  };
+  
+  const handleRecordingComplete = (blob: Blob, duration: number) => {
+    console.log(`Recording complete: ${duration.toFixed(1)}s`);
+    // In a full implementation, you would upload this to your storage
+    // and create a new track with the recording
+  };
+  
   return (
     <div className="min-h-screen bg-cyber-dark text-white flex flex-col">
       <Navbar />
@@ -124,6 +181,74 @@ const Studio = () => {
             </div>
             
             <TrackList tracks={tracks} onTrackUpdate={updateTrack} />
+            
+            {/* Mobile-only Drawer for Advanced Features */}
+            <div className="lg:hidden mt-4">
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button className="w-full bg-cyber-purple hover:bg-cyber-purple/80">
+                    <Brain className="mr-2 h-4 w-4" />
+                    Advanced Features
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="bg-cyber-darker text-white p-4 max-h-[80vh]">
+                  <Tabs defaultValue="midi" value={drawerTab} onValueChange={setDrawerTab}>
+                    <TabsList className="grid grid-cols-4 mb-4">
+                      <TabsTrigger value="midi">
+                        <Music className="h-4 w-4" />
+                      </TabsTrigger>
+                      <TabsTrigger value="voice">
+                        <Mic className="h-4 w-4" />
+                      </TabsTrigger>
+                      <TabsTrigger value="ai">
+                        <Brain className="h-4 w-4" />
+                      </TabsTrigger>
+                      <TabsTrigger value="record">
+                        <Mic className="h-4 w-4" />
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="midi">
+                      <MIDIController 
+                        onNoteOn={handleMIDINoteOn}
+                        onNoteOff={handleMIDINoteOff}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="voice">
+                      <VoiceChat projectId={projectId} />
+                    </TabsContent>
+                    
+                    <TabsContent value="ai">
+                      <AIAssistant 
+                        onGenerateProgression={handleGeneratedChordProgression}
+                        onGenerateMelody={handleGeneratedMelody}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="record">
+                      <AudioRecorder 
+                        projectId={projectId}
+                        onRecordingComplete={handleRecordingComplete}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </DrawerContent>
+              </Drawer>
+            </div>
+            
+            {/* Desktop Advanced Features */}
+            <div className="hidden lg:block space-y-4 mt-6">
+              <MIDIController 
+                onNoteOn={handleMIDINoteOn}
+                onNoteOff={handleMIDINoteOff}
+              />
+              
+              <AudioRecorder 
+                projectId={projectId}
+                onRecordingComplete={handleRecordingComplete}
+              />
+            </div>
           </div>
           
           {/* Main Content - Timeline and Waveforms */}
@@ -181,7 +306,39 @@ const Studio = () => {
               <TabsContent value="collaborators">
                 <CollaboratorsList collaborators={collaborators} />
               </TabsContent>
+              
+              <TabsContent value="voice">
+                <VoiceChat projectId={projectId} />
+              </TabsContent>
+              
+              <TabsContent value="ai">
+                <AIAssistant 
+                  onGenerateProgression={handleGeneratedChordProgression}
+                  onGenerateMelody={handleGeneratedMelody}
+                />
+              </TabsContent>
             </Tabs>
+            
+            {/* Additional Advanced Features for Desktop */}
+            <div className="mt-4 pt-4 border-t border-cyber-purple/20">
+              <Button 
+                variant="outline" 
+                className="w-full border-cyber-purple/30 hover:bg-cyber-purple/10 mb-2"
+                onClick={() => setRightPanelTab("voice")}
+              >
+                <Mic className="mr-2 h-4 w-4" /> 
+                Voice Chat
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full border-cyber-purple/30 hover:bg-cyber-purple/10"
+                onClick={() => setRightPanelTab("ai")}
+              >
+                <Brain className="mr-2 h-4 w-4" /> 
+                AI Assistant
+              </Button>
+            </div>
           </div>
         </div>
       </div>
