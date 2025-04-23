@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import TrackList from "@/components/TrackList";
 import MixerControls from "@/components/MixerControls";
 import AudioEngine from "@/components/AudioEngine";
 import { Button } from "@/components/ui/button";
-import { Plus, MessageSquare, Users, Mic, Music, Brain } from "lucide-react";
+import { Plus, MessageSquare, Users, Mic, Music, Brain, Keyboard as LucideKeyboard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +22,7 @@ import MIDIController from "@/components/midi/MIDIController";
 import VoiceChat from "@/components/voice/VoiceChat";
 import AIAssistant from "@/components/ai/AIAssistant";
 import AudioRecorder from "@/components/audio/AudioRecorder";
+import PianoKeyboard from "@/components/midi/PianoKeyboard";
 import * as Tone from "tone";
 
 const Studio = () => {
@@ -36,7 +36,6 @@ const Studio = () => {
   const [projectId, setProjectId] = useState("demo-project");
   const [toneInitialized, setToneInitialized] = useState(false);
   
-  // Initialize Tone.js on first user interaction
   const initializeTone = async () => {
     if (!toneInitialized) {
       await Tone.start();
@@ -45,19 +44,13 @@ const Studio = () => {
     }
   };
   
-  // Fetch current project and collaborators
   useEffect(() => {
     if (user) {
-      // In a real implementation, we would fetch the current project
-      // and its collaborators based on project ID from the URL
-      
-      // Mock collaborators for now
       setCollaborators([
         { id: '1', name: 'Alice Cooper', avatar: '', status: 'online' },
         { id: '2', name: 'Bob Dylan', avatar: '', status: 'offline' },
       ]);
       
-      // Set up real-time presence with Supabase
       const channel = supabase.channel('studio_collaboration');
       
       channel
@@ -110,7 +103,6 @@ const Studio = () => {
       return;
     }
     
-    // In a complete implementation, we would save the project to Supabase
     toast({
       title: "Project saved",
       description: "All your changes have been saved to the cloud.",
@@ -124,20 +116,16 @@ const Studio = () => {
     });
   };
   
-  // Handle MIDI note events
   const handleMIDINoteOn = (note: number, velocity: number) => {
     console.log(`MIDI Note On: ${note}, velocity: ${velocity}`);
-    // You would typically use this to trigger synths or record MIDI data
   };
   
   const handleMIDINoteOff = (note: number) => {
     console.log(`MIDI Note Off: ${note}`);
   };
   
-  // Handle AI-generated content
   const handleGeneratedChordProgression = (chords: string[]) => {
     console.log("Generated chord progression:", chords);
-    // In a full implementation, you would use these chords to create/update tracks
     toast({
       title: "Chord Progression Generated",
       description: `Applied progression: ${chords.join(' - ')}`,
@@ -146,7 +134,6 @@ const Studio = () => {
   
   const handleGeneratedMelody = (notes: string[]) => {
     console.log("Generated melody:", notes);
-    // In a full implementation, you would use these notes to create/update tracks
     toast({
       title: "Melody Generated",
       description: `Applied ${notes.length} notes to the project`,
@@ -155,8 +142,6 @@ const Studio = () => {
   
   const handleRecordingComplete = (blob: Blob, duration: number) => {
     console.log(`Recording complete: ${duration.toFixed(1)}s`);
-    // In a full implementation, you would upload this to your storage
-    // and create a new track with the recording
   };
   
   return (
@@ -166,7 +151,6 @@ const Studio = () => {
       
       <div className="flex-1 pt-16 flex flex-col">
         <div className="flex-1 flex flex-col lg:flex-row">
-          {/* Left Sidebar - Track Controls */}
           <div className="w-full lg:w-1/4 p-4 bg-cyber-darker border-r border-cyber-purple/20">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Tracks</h2>
@@ -182,7 +166,6 @@ const Studio = () => {
             
             <TrackList tracks={tracks} onTrackUpdate={updateTrack} />
             
-            {/* Mobile-only Drawer for Advanced Features */}
             <div className="lg:hidden mt-4">
               <Drawer>
                 <DrawerTrigger asChild>
@@ -193,9 +176,12 @@ const Studio = () => {
                 </DrawerTrigger>
                 <DrawerContent className="bg-cyber-darker text-white p-4 max-h-[80vh]">
                   <Tabs defaultValue="midi" value={drawerTab} onValueChange={setDrawerTab}>
-                    <TabsList className="grid grid-cols-4 mb-4">
+                    <TabsList className="grid grid-cols-5 mb-4">
                       <TabsTrigger value="midi">
                         <Music className="h-4 w-4" />
+                      </TabsTrigger>
+                      <TabsTrigger value="keyboard">
+                        <LucideKeyboard className="h-4 w-4" />
                       </TabsTrigger>
                       <TabsTrigger value="voice">
                         <Mic className="h-4 w-4" />
@@ -210,6 +196,13 @@ const Studio = () => {
                     
                     <TabsContent value="midi">
                       <MIDIController 
+                        onNoteOn={handleMIDINoteOn}
+                        onNoteOff={handleMIDINoteOff}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="keyboard">
+                      <PianoKeyboard 
                         onNoteOn={handleMIDINoteOn}
                         onNoteOff={handleMIDINoteOff}
                       />
@@ -237,13 +230,15 @@ const Studio = () => {
               </Drawer>
             </div>
             
-            {/* Desktop Advanced Features */}
             <div className="hidden lg:block space-y-4 mt-6">
               <MIDIController 
                 onNoteOn={handleMIDINoteOn}
                 onNoteOff={handleMIDINoteOff}
               />
-              
+              <PianoKeyboard 
+                onNoteOn={handleMIDINoteOn}
+                onNoteOff={handleMIDINoteOff}
+              />
               <AudioRecorder 
                 projectId={projectId}
                 onRecordingComplete={handleRecordingComplete}
@@ -251,7 +246,6 @@ const Studio = () => {
             </div>
           </div>
           
-          {/* Main Content - Timeline and Waveforms */}
           <div className="flex-1 flex flex-col">
             <ProjectHeader 
               onOpenCommentsPanel={() => setRightPanelTab("chat")}
@@ -259,7 +253,6 @@ const Studio = () => {
               onOpenSettingsPanel={() => toast({ title: "Project Settings", description: "Settings panel will be available in the next update." })}
             />
             
-            {/* Timeline and Waveform Area */}
             <div className="flex-1 p-4 relative">
               <TimelineRuler />
               <TrackTimeline tracks={tracks} isPlaying={isPlaying} />
@@ -274,7 +267,6 @@ const Studio = () => {
             />
           </div>
           
-          {/* Right Sidebar - Details, Effects, Chat, and Collaborators */}
           <div className="w-full lg:w-1/4 p-4 bg-cyber-darker border-l border-cyber-purple/20 hidden lg:block">
             <Tabs value={rightPanelTab} onValueChange={setRightPanelTab}>
               <TabsList className="w-full grid grid-cols-4 mb-4">
@@ -319,7 +311,6 @@ const Studio = () => {
               </TabsContent>
             </Tabs>
             
-            {/* Additional Advanced Features for Desktop */}
             <div className="mt-4 pt-4 border-t border-cyber-purple/20">
               <Button 
                 variant="outline" 
