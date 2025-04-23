@@ -1,6 +1,10 @@
+
 import React, { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useSynth } from "@/hooks/useSynth";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Volume2 } from "lucide-react";
 
 // Define range and white/black key mapping
 const WHITE_KEYS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -47,7 +51,8 @@ type PianoKeyboardProps = {
 
 const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) => {
   const [activeNotes, setActiveNotes] = useState<number[]>([]);
-  const { playNote, stopNote } = useSynth();
+  const [volume, setVolume] = useState<number>(80);
+  const { playNote, stopNote, changeSynthType, currentSynth } = useSynth();
 
   // Given MIDI number, return if it's a white key
   const isWhite = useCallback((note: number) => {
@@ -118,84 +123,152 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
     if (e.key === "k") handleUp(72);
   };
 
+  // Handle synth type change
+  const handleSynthChange = (value: string) => {
+    changeSynthType(value as any);
+  };
+
+  // Handle volume change
+  const handleVolumeChange = (values: number[]) => {
+    setVolume(values[0]);
+    // Volume calculation (convert percentage to dB)
+    const dbValue = ((values[0] / 100) * 40) - 40; // -40dB (silent) to 0dB (full)
+    if (Tone.getDestination()) {
+      Tone.getDestination().volume.value = dbValue;
+    }
+  };
+
   return (
-    <div
-      className="relative w-fit mx-auto select-none touch-none"
-      tabIndex={0}
-      aria-label="Piano Keyboard"
-      onKeyDown={handleKeyDown}
-      onKeyUp={handleKeyUp}
-    >
-      {/* White Keys */}
-      <div className="flex z-10">
-        {whiteNotes.map((note, idx) => (
-          <div
-            key={note}
-            className={cn(
-              "border border-gray-900 bg-white/90 text-xs relative flex flex-col justify-end items-center",
-              "transition-colors",
-              activeNotes.includes(note) ? "bg-cyber-purple/90 text-white shadow-2xl" : "hover:bg-cyber-light-red/40",
-              idx === 0 ? "rounded-l-sm" : "",
-              idx === whiteNotes.length - 1 ? "rounded-r-sm" : "",
-            )}
-            style={{
-              width: KEY_WIDTH,
-              height: KEY_HEIGHT,
-              marginLeft: idx === 0 ? 0 : -1,
-              zIndex: 1,
-              userSelect: "none"
-            }}
-            {...makeHandlers(note)}
-            role="button"
-            aria-pressed={activeNotes.includes(note)}
-            tabIndex={-1}
-          >
-            <span className={cn("mb-2 pointer-events-none text-[10px]", activeNotes.includes(note) ? "text-white font-bold" : "text-gray-500")}>
-              {getNoteLabel(note)}
-            </span>
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-between items-center bg-cyber-darker/70 rounded-lg p-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-cyber-purple/30">
+        <h3 className="text-sm font-medium text-cyber-light-red">Piano Keyboard</h3>
+        
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Volume2 className="h-4 w-4 text-cyber-purple/70" />
+            <Slider 
+              className="w-24" 
+              value={[volume]} 
+              min={0} 
+              max={100} 
+              step={1} 
+              onValueChange={handleVolumeChange} 
+            />
           </div>
-        ))}
+          
+          <Select defaultValue="basic" value={currentSynth} onValueChange={handleSynthChange}>
+            <SelectTrigger className="w-[120px] h-8 text-xs bg-cyber-darker border-cyber-purple/30">
+              <SelectValue placeholder="Synth Type" />
+            </SelectTrigger>
+            <SelectContent className="bg-cyber-darker border-cyber-purple/30">
+              <SelectItem value="basic" className="text-xs">Basic Synth</SelectItem>
+              <SelectItem value="fm" className="text-xs">FM Synth</SelectItem>
+              <SelectItem value="am" className="text-xs">AM Synth</SelectItem>
+              <SelectItem value="membrane" className="text-xs">Percussion</SelectItem>
+              <SelectItem value="pluck" className="text-xs">Pluck Synth</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-      {/* Black Keys */}
-      <div className="pointer-events-none absolute left-0 top-0 flex flex-row z-20" style={{height: BLACK_KEY_HEIGHT, width: whiteNotes.length * KEY_WIDTH}}>
-        {/* Black keys are not rendered for E/B */}
-        {notes.map((note, idx) => {
-          const nInOct = note % 12;
-          // E and B (4, 11) don't have sharps
-          if ([1, 3, 6, 8, 10].includes(nInOct)) {
-            // Position left over the gap between two white keys
-            // Offset = (#whites left of this key) * KEY_WIDTH - half a black key
-            const whitesLeft = notes.slice(0, idx + 1).filter(isWhite).length - 1;
-            return (
-              <div
-                key={note}
-                className={cn(
-                  "absolute border border-gray-700 bg-black",
-                  activeNotes.includes(note) ? "bg-cyber-purple" : ""
-                )}
-                style={{
-                  left: whitesLeft * KEY_WIDTH - BLACK_KEY_WIDTH / 2,
-                  width: BLACK_KEY_WIDTH,
-                  height: BLACK_KEY_HEIGHT,
-                  borderRadius: "0 0 2px 2px",
-                  zIndex: 2,
-                  userSelect: "none",
-                  cursor: "pointer",
-                  pointerEvents: "auto"
-                }}
-                onMouseDown={() => handleDown(note)}
-                onMouseUp={() => handleUp(note)}
-                onMouseLeave={() => handleUp(note)}
-                onTouchStart={e => { e.preventDefault(); handleDown(note); }}
-                onTouchEnd={() => handleUp(note)}
-                role="button"
-                aria-pressed={activeNotes.includes(note)}
-                tabIndex={-1}
-              />
-            );
-          }
-          return null;
-        })}
+
+      <div
+        className="relative w-fit mx-auto select-none touch-none bg-cyber-darker/40 p-4 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+        tabIndex={0}
+        aria-label="Piano Keyboard"
+        onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
+        style={{
+          boxShadow: "0 10px 30px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1)"
+        }}
+      >
+        {/* White Keys */}
+        <div className="flex z-10">
+          {whiteNotes.map((note, idx) => (
+            <div
+              key={note}
+              className={cn(
+                "relative flex flex-col justify-end items-center transition-all",
+                activeNotes.includes(note) ? 
+                  "bg-gradient-to-b from-cyber-purple/90 to-cyber-purple/70 text-white shadow-lg" : 
+                  "bg-gradient-to-b from-white to-white/90 hover:bg-cyber-light-red/10",
+                "border border-gray-900/50",
+                idx === 0 ? "rounded-l-sm" : "",
+                idx === whiteNotes.length - 1 ? "rounded-r-sm" : "",
+              )}
+              style={{
+                width: KEY_WIDTH,
+                height: KEY_HEIGHT,
+                marginLeft: idx === 0 ? 0 : -1,
+                zIndex: 1,
+                userSelect: "none",
+                boxShadow: activeNotes.includes(note) ? 
+                  "inset 0 -5px 10px rgba(0,0,0,0.2), 0 2px 10px rgba(0, 0, 0, 0.2)" : 
+                  "inset 0 -10px 15px rgba(0,0,0,0.1), 0 0 1px rgba(0, 0, 0, 0.4)"
+              }}
+              {...makeHandlers(note)}
+              role="button"
+              aria-pressed={activeNotes.includes(note)}
+              tabIndex={-1}
+            >
+              <span className={cn(
+                "mb-2 pointer-events-none text-[10px]", 
+                activeNotes.includes(note) ? "text-white font-bold" : "text-gray-500"
+              )}>
+                {getNoteLabel(note)}
+              </span>
+            </div>
+          ))}
+        </div>
+        
+        {/* Black Keys */}
+        <div className="pointer-events-none absolute left-0 top-0 flex flex-row z-20" style={{height: BLACK_KEY_HEIGHT, width: whiteNotes.length * KEY_WIDTH}}>
+          {/* Black keys are not rendered for E/B */}
+          {notes.map((note, idx) => {
+            const nInOct = note % 12;
+            // E and B (4, 11) don't have sharps
+            if ([1, 3, 6, 8, 10].includes(nInOct)) {
+              // Position left over the gap between two white keys
+              // Offset = (#whites left of this key) * KEY_WIDTH - half a black key
+              const whitesLeft = notes.slice(0, idx + 1).filter(isWhite).length - 1;
+              return (
+                <div
+                  key={note}
+                  className={cn(
+                    "absolute border border-gray-800/80",
+                    activeNotes.includes(note) ? 
+                      "bg-gradient-to-b from-cyber-red to-cyber-red/80" : 
+                      "bg-gradient-to-b from-black to-gray-800"
+                  )}
+                  style={{
+                    left: whitesLeft * KEY_WIDTH - BLACK_KEY_WIDTH / 2,
+                    width: BLACK_KEY_WIDTH,
+                    height: BLACK_KEY_HEIGHT,
+                    borderRadius: "0 0 4px 4px",
+                    zIndex: 2,
+                    userSelect: "none",
+                    cursor: "pointer",
+                    pointerEvents: "auto",
+                    boxShadow: activeNotes.includes(note) ? 
+                      "inset 0 -5px 8px rgba(0,0,0,0.3), 0 1px 1px rgba(255, 255, 255, 0.1)" : 
+                      "inset 0 -8px 10px rgba(0,0,0,0.4), 0 3px 5px rgba(0, 0, 0, 0.5)"
+                  }}
+                  onMouseDown={() => handleDown(note)}
+                  onMouseUp={() => handleUp(note)}
+                  onMouseLeave={() => handleUp(note)}
+                  onTouchStart={e => { e.preventDefault(); handleDown(note); }}
+                  onTouchEnd={() => handleUp(note)}
+                  role="button"
+                  aria-pressed={activeNotes.includes(note)}
+                  tabIndex={-1}
+                />
+              );
+            }
+            return null;
+          })}
+        </div>
+      </div>
+      <div className="text-xs text-cyber-purple/60 text-center">
+        Use your QWERTY keyboard: A=C4, W=C#4, S=D4, etc.
       </div>
     </div>
   );

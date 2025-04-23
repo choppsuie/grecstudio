@@ -5,7 +5,7 @@ import TrackList from "@/components/TrackList";
 import MixerControls from "@/components/MixerControls";
 import AudioEngine from "@/components/AudioEngine";
 import { Button } from "@/components/ui/button";
-import { Plus, MessageSquare, Users, Mic, Music, Brain, Keyboard as LucideKeyboard, Settings, Save, Share2, Scissors, Copy, Trash2, Undo, Redo } from "lucide-react";
+import { Plus, MessageSquare, Users, Mic, Music, Brain, Keyboard as LucideKeyboard, Settings, Save, Share2, Scissors, Copy, Trash2, Undo, Redo, Record } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
@@ -26,12 +26,14 @@ import AudioRecorder from "@/components/audio/AudioRecorder";
 import PianoKeyboard from "@/components/midi/PianoKeyboard";
 import TransportControls from "@/components/studio/TransportControls";
 import MarkerList from "@/components/studio/MarkerList";
+import StudioMenubar from "@/components/studio/StudioMenubar";
 import * as Tone from "tone";
 
 const Studio = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const { tracks, updateTrack, addTrack } = useTrackManager();
   const [collaborators, setCollaborators] = useState<any[]>([]);
   const [rightPanelTab, setRightPanelTab] = useState("effects");
@@ -39,7 +41,7 @@ const Studio = () => {
   const [projectId, setProjectId] = useState("demo-project");
   const [toneInitialized, setToneInitialized] = useState(false);
   const [bpm, setBpm] = useState(120);
-  const [mainView, setMainView] = useState<"arranger" | "mixer">("arranger");
+  const [showMixer, setShowMixer] = useState(true);
   const timelineRef = useRef<HTMLDivElement>(null);
   
   const initializeTone = async () => {
@@ -109,6 +111,33 @@ const Studio = () => {
     Tone.Transport.stop();
   };
   
+  const handleRecord = async () => {
+    await initializeTone();
+    
+    if (isRecording) {
+      // Stop recording
+      setIsRecording(false);
+      if (isPlaying) {
+        handlePause();
+      }
+      toast({
+        title: "Recording stopped",
+        description: "Your recording has been saved.",
+      });
+    } else {
+      // Start recording
+      setIsRecording(true);
+      if (!isPlaying) {
+        handlePlay();
+      }
+      toast({
+        title: "Recording started",
+        description: "Recording in progress...",
+        variant: "destructive"
+      });
+    }
+  };
+  
   const handleSave = async () => {
     if (!user) {
       toast({
@@ -158,6 +187,19 @@ const Studio = () => {
   
   const handleRecordingComplete = (blob: Blob, duration: number) => {
     console.log(`Recording complete: ${duration.toFixed(1)}s`);
+    setIsRecording(false);
+    
+    // Add a new track with the recording
+    addTrack({
+      name: `Recording ${new Date().toLocaleTimeString()}`,
+      type: 'audio',
+      color: '#F9636F',
+    });
+    
+    toast({
+      title: "Recording complete",
+      description: `${duration.toFixed(1)}s audio saved to new track.`,
+    });
   };
   
   const handleBpmChange = (newBpm: number) => {
@@ -167,29 +209,19 @@ const Studio = () => {
     }
   };
   
+  const toggleMixer = () => {
+    setShowMixer(!showMixer);
+  };
+  
   return (
     <div className="min-h-screen bg-cyber-dark text-white flex flex-col">
       {/* Top Navigation */}
       <div className="border-b border-cyber-purple/20 bg-cyber-darker">
-        <div className="flex items-center h-8 px-2">
-          <div className="flex space-x-4 text-xs">
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">File</Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Edit</Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Mix</Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Track</Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Sound</Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">View</Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Help</Button>
-          </div>
-          
-          <div className="ml-auto flex items-center space-x-1">
-            <span className="text-xs text-cyber-red font-semibold">CyberDAW v1.0</span>
-          </div>
-        </div>
+        <StudioMenubar />
         
         <div className="flex items-center h-10 px-2 border-t border-cyber-purple/10">
           <div className="flex space-x-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSave}>
               <Save className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -207,6 +239,15 @@ const Studio = () => {
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <Trash2 className="h-4 w-4" />
+            </Button>
+            <div className="h-8 border-r border-cyber-purple/20 mx-1"></div>
+            <Button 
+              variant={isRecording ? "destructive" : "ghost"} 
+              size="icon" 
+              className={cn("h-8 w-8", isRecording && "animate-pulse")} 
+              onClick={handleRecord}
+            >
+              <Record className="h-4 w-4" />
             </Button>
           </div>
           
@@ -240,30 +281,35 @@ const Studio = () => {
           </div>
           
           <div className="border-t border-cyber-purple/20 p-2">
-            <Button variant="outline" size="sm" className="w-full" onClick={() => setMainView(mainView === "arranger" ? "mixer" : "arranger")}>
-              {mainView === "arranger" ? "Show Mixer" : "Show Arranger"}
+            <Button variant="outline" size="sm" className="w-full" onClick={toggleMixer}>
+              {showMixer ? "Hide Mixer" : "Show Mixer"}
             </Button>
           </div>
         </div>
         
         {/* Main content area */}
         <div className="flex-1 flex flex-col">
-          {mainView === "arranger" ? (
-            <>
-              {/* Project ruler and timeline */}
-              <div className="flex-1 overflow-hidden flex flex-col">
-                <TimelineRuler />
-                <div className="flex-1 overflow-y-auto" ref={timelineRef}>
-                  <TrackTimeline tracks={tracks} isPlaying={isPlaying} />
-                </div>
+          {/* Arranger View */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <TimelineRuler />
+            <div className="flex-1 overflow-y-auto" ref={timelineRef}>
+              <TrackTimeline tracks={tracks} isPlaying={isPlaying} />
+            </div>
+          </div>
+          
+          {/* Mixer View at the bottom */}
+          {showMixer && (
+            <div className="border-t border-cyber-purple/20 h-64">
+              <div className="h-8 border-b border-cyber-purple/20 bg-cyber-darker/50 px-4 flex justify-between items-center">
+                <span className="text-xs font-medium">Mixer</span>
+                <button 
+                  className="text-cyber-purple/70 hover:text-cyber-purple text-xs" 
+                  onClick={toggleMixer}
+                >
+                  Hide
+                </button>
               </div>
-            </>
-          ) : (
-            <div className="flex-1 flex flex-col">
-              <div className="h-8 border-b border-cyber-purple/20 bg-cyber-darker/50 px-2 flex items-center">
-                <span className="text-xs font-medium">Mixer View</span>
-              </div>
-              <div className="flex-1 p-2 overflow-auto">
+              <div className="h-[calc(100%-2rem)] overflow-x-auto">
                 <MixerControls 
                   isPlaying={isPlaying}
                   onPlay={handlePlay}
@@ -303,13 +349,10 @@ const Studio = () => {
             </TabsContent>
             
             <TabsContent value="keyboard" className="flex-1 overflow-y-auto p-2 m-0">
-              <div className="glass-card p-3 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Piano Keyboard</h3>
-                <PianoKeyboard 
-                  onNoteOn={handleMIDINoteOn}
-                  onNoteOff={handleMIDINoteOff}
-                />
-              </div>
+              <PianoKeyboard 
+                onNoteOn={handleMIDINoteOn}
+                onNoteOff={handleMIDINoteOff}
+              />
             </TabsContent>
             
             <TabsContent value="midi" className="flex-1 overflow-y-auto p-2 m-0">
@@ -322,9 +365,25 @@ const Studio = () => {
         </div>
       </div>
       
+      {/* Audio recorder component (visible when recording) */}
+      {isRecording && (
+        <div className="fixed bottom-16 right-6 bg-cyber-darker border border-cyber-red/50 p-3 rounded-lg shadow-lg animate-pulse">
+          <AudioRecorder 
+            isRecording={isRecording} 
+            onRecordingComplete={handleRecordingComplete} 
+          />
+        </div>
+      )}
+      
       {/* Status bar */}
       <div className="h-6 bg-cyber-darker border-t border-cyber-purple/20 px-3 flex items-center text-xs text-cyber-purple/70">
-        <div className="flex-1">Ready</div>
+        <div className="flex-1">
+          {isRecording ? (
+            <span className="text-cyber-red font-medium">● Recording...</span>
+          ) : (
+            "Ready"
+          )}
+        </div>
         <div className="flex space-x-4">
           <span>48000 Hz, Stereo</span>
           <span>{bpm} BPM</span>

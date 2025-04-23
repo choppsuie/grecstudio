@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Play, Pause, SkipBack, SkipForward, Square, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface TransportControlsProps {
   isPlaying: boolean;
@@ -46,11 +47,14 @@ const TransportControls = ({
   
   return (
     <div className="flex items-center space-x-2">
-      <div className="flex items-center space-x-1 bg-cyber-dark p-1 rounded-sm">
+      <div className="flex items-center space-x-1 bg-cyber-dark p-1 rounded-sm shadow-[0_2px_10px_rgba(0,0,0,0.15)]">
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 hover:bg-cyber-purple/20"
+          className={cn(
+            "h-7 w-7 transition-all",
+            "hover:bg-cyber-purple/20"
+          )}
           onClick={onStop}
         >
           <Square className="h-3.5 w-3.5" />
@@ -94,11 +98,11 @@ const TransportControls = ({
       </div>
       
       <div className="flex items-center space-x-1">
-        <div className="font-mono text-xs bg-cyber-dark px-2 py-1 rounded-sm min-w-[80px] text-center">
+        <div className="font-mono text-xs bg-cyber-dark px-2 py-1 rounded-sm min-w-[80px] text-center shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]">
           {currentTime}
         </div>
         
-        <div className="flex items-center space-x-1 bg-cyber-dark rounded-sm px-1">
+        <div className="flex items-center space-x-1 bg-cyber-dark rounded-sm px-1 shadow-[0_2px_10px_rgba(0,0,0,0.15)]">
           <Clock className="h-3.5 w-3.5 text-cyber-purple/70" />
           <Input
             value={localBpm}

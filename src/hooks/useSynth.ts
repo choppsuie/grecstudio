@@ -1,28 +1,97 @@
-import { useRef } from "react";
+
+import { useRef, useState } from "react";
 import * as Tone from "tone";
 
 type PlayNote = (midi: number, velocity?: number) => void;
 type StopNote = (midi: number) => void;
+type SynthType = "basic" | "fm" | "am" | "membrane" | "pluck";
 
 /**
- * Simple PolySynth hook for piano/keyboard playback via Tone.js.
- * Usage: const { playNote, stopNote } = useSynth();
+ * Enhanced PolySynth hook for piano/keyboard playback via Tone.js.
+ * Supports multiple synth types for different sounds.
+ * Usage: const { playNote, stopNote, changeSynthType, currentSynth } = useSynth();
  */
 export function useSynth() {
   // Keep synth instance across renders
   const synthRef = useRef<Tone.PolySynth | null>(null);
-
-  if (!synthRef.current) {
-    synthRef.current = new Tone.PolySynth(Tone.Synth, {
+  const [currentSynth, setCurrentSynth] = useState<SynthType>("basic");
+  
+  const createSynth = (type: SynthType) => {
+    // Dispose old synth if it exists
+    if (synthRef.current) {
+      synthRef.current.dispose();
+    }
+    
+    let synthOptions = {};
+    let synthClass = Tone.Synth;
+    
+    // Configure synth based on type
+    switch (type) {
+      case "fm":
+        synthClass = Tone.FMSynth;
+        synthOptions = {
+          modulationIndex: 10,
+          harmonicity: 3.01
+        };
+        break;
+      case "am":
+        synthClass = Tone.AMSynth;
+        synthOptions = {
+          harmonicity: 2.5
+        };
+        break;
+      case "membrane":
+        synthClass = Tone.MembraneSynth;
+        synthOptions = {
+          octaves: 4,
+          pitchDecay: 0.1
+        };
+        break;
+      case "pluck":
+        synthClass = Tone.PluckSynth;
+        synthOptions = {
+          attackNoise: 1,
+          dampening: 4000,
+          resonance: 0.7
+        };
+        break;
+      default: // "basic"
+        synthOptions = {
+          oscillator: {
+            type: "triangle8"
+          },
+          envelope: {
+            attack: 0.01,
+            decay: 0.2,
+            sustain: 0.2,
+            release: 0.8,
+          }
+        };
+    }
+    
+    // Create new synth
+    synthRef.current = new Tone.PolySynth(synthClass, {
       volume: -8, // softer default
-      envelope: {
-        attack: 0.01,
-        decay: 0.2,
-        sustain: 0.2,
-        release: 0.8,
-      }
+      ...synthOptions
     }).toDestination();
+    
+    // Add reverb for more pleasing sound
+    const reverb = new Tone.Reverb(1.5).toDestination();
+    synthRef.current.connect(reverb);
+    
+    return synthRef.current;
+  };
+  
+  // Initialize synth if it doesn't exist
+  if (!synthRef.current) {
+    createSynth(currentSynth);
   }
+
+  // Change synth type
+  const changeSynthType = (type: SynthType) => {
+    setCurrentSynth(type);
+    createSynth(type);
+  };
 
   // Helper functions: MIDI note number -> "C4" etc.
   const playNote: PlayNote = (midi, velocity = 100) => {
@@ -38,5 +107,5 @@ export function useSynth() {
     synthRef.current!.triggerRelease(note);
   };
 
-  return { playNote, stopNote };
+  return { playNote, stopNote, changeSynthType, currentSynth };
 }
