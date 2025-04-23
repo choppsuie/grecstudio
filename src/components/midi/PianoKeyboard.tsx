@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 // Define range and white/black key mapping
 const WHITE_KEYS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const BLACK_KEYS = ['C#', 'D#', '', 'F#', 'G#', 'A#', ''];
-const KEY_WIDTH = 40;
-const KEY_HEIGHT = 180;
-const BLACK_KEY_HEIGHT = 112;
-const BLACK_KEY_WIDTH = 26;
+const KEY_WIDTH = 32; // Smaller key width for better fit
+const KEY_HEIGHT = 120; // Shorter keys
+const BLACK_KEY_HEIGHT = 70;
+const BLACK_KEY_WIDTH = 20;
 
 // Show one octave + C5 by default (C4 to C5)
 const START_NOTE = 60; // MIDI note for C4
@@ -19,9 +19,25 @@ const NUM_KEYS = 13; // C4 to C5
 // 60 61 62 63 64 65 66 67 68 69 70 71 72
 
 function getNoteLabel(note: number) {
-  const name = WHITE_KEYS[note % 12] || '';
+  const noteIndex = note % 12;
   const octave = Math.floor(note / 12) - 1;
-  return `${name}${octave}`;
+  
+  // Get the note name based on its position in the octave
+  let noteName = '';
+  if (noteIndex === 0) noteName = 'C';
+  else if (noteIndex === 1) noteName = 'C#';
+  else if (noteIndex === 2) noteName = 'D';
+  else if (noteIndex === 3) noteName = 'D#';
+  else if (noteIndex === 4) noteName = 'E';
+  else if (noteIndex === 5) noteName = 'F';
+  else if (noteIndex === 6) noteName = 'F#';
+  else if (noteIndex === 7) noteName = 'G';
+  else if (noteIndex === 8) noteName = 'G#';
+  else if (noteIndex === 9) noteName = 'A';
+  else if (noteIndex === 10) noteName = 'A#';
+  else if (noteIndex === 11) noteName = 'B';
+  
+  return `${noteName}${octave}`;
 }
 
 type PianoKeyboardProps = {
@@ -116,8 +132,8 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
               "border border-gray-900 bg-white/90 text-xs relative flex flex-col justify-end items-center",
               "transition-colors",
               activeNotes.includes(note) ? "bg-cyber-purple/90 text-white shadow-2xl" : "hover:bg-cyber-light-red/40",
-              idx === 0 ? "rounded-l-lg" : "",
-              idx === whiteNotes.length - 1 ? "rounded-r-lg" : "",
+              idx === 0 ? "rounded-l-sm" : "",
+              idx === whiteNotes.length - 1 ? "rounded-r-sm" : "",
             )}
             style={{
               width: KEY_WIDTH,
@@ -131,7 +147,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
             aria-pressed={activeNotes.includes(note)}
             tabIndex={-1}
           >
-            <span className={cn("mb-2 pointer-events-none", activeNotes.includes(note) ? "text-white font-bold" : "text-gray-500")}>
+            <span className={cn("mb-2 pointer-events-none text-[10px]", activeNotes.includes(note) ? "text-white font-bold" : "text-gray-500")}>
               {getNoteLabel(note)}
             </span>
           </div>
@@ -158,7 +174,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
                   left: whitesLeft * KEY_WIDTH - BLACK_KEY_WIDTH / 2,
                   width: BLACK_KEY_WIDTH,
                   height: BLACK_KEY_HEIGHT,
-                  borderRadius: "0 0 4px 4px",
+                  borderRadius: "0 0 2px 2px",
                   zIndex: 2,
                   userSelect: "none",
                   cursor: "pointer",

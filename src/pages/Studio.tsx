@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import TrackList from "@/components/TrackList";
 import MixerControls from "@/components/MixerControls";
 import AudioEngine from "@/components/AudioEngine";
 import { Button } from "@/components/ui/button";
-import { Plus, MessageSquare, Users, Mic, Music, Brain, Keyboard as LucideKeyboard } from "lucide-react";
+import { Plus, MessageSquare, Users, Mic, Music, Brain, Keyboard as LucideKeyboard, Settings, Save, Share2, Scissors, Copy, Trash2, Undo, Redo } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +24,8 @@ import VoiceChat from "@/components/voice/VoiceChat";
 import AIAssistant from "@/components/ai/AIAssistant";
 import AudioRecorder from "@/components/audio/AudioRecorder";
 import PianoKeyboard from "@/components/midi/PianoKeyboard";
+import TransportControls from "@/components/studio/TransportControls";
+import MarkerList from "@/components/studio/MarkerList";
 import * as Tone from "tone";
 
 const Studio = () => {
@@ -35,12 +38,16 @@ const Studio = () => {
   const [drawerTab, setDrawerTab] = useState<string>("midi");
   const [projectId, setProjectId] = useState("demo-project");
   const [toneInitialized, setToneInitialized] = useState(false);
+  const [bpm, setBpm] = useState(120);
+  const [mainView, setMainView] = useState<"arranger" | "mixer">("arranger");
+  const timelineRef = useRef<HTMLDivElement>(null);
   
   const initializeTone = async () => {
     if (!toneInitialized) {
       await Tone.start();
       setToneInitialized(true);
       console.log("Tone.js initialized");
+      Tone.Transport.bpm.value = bpm;
     }
   };
   
@@ -89,9 +96,18 @@ const Studio = () => {
   const handlePlay = async () => {
     await initializeTone();
     setIsPlaying(true);
+    Tone.Transport.start();
   };
   
-  const handlePause = () => setIsPlaying(false);
+  const handlePause = () => {
+    setIsPlaying(false);
+    Tone.Transport.pause();
+  };
+  
+  const handleStop = () => {
+    setIsPlaying(false);
+    Tone.Transport.stop();
+  };
   
   const handleSave = async () => {
     if (!user) {
@@ -144,193 +160,176 @@ const Studio = () => {
     console.log(`Recording complete: ${duration.toFixed(1)}s`);
   };
   
+  const handleBpmChange = (newBpm: number) => {
+    setBpm(newBpm);
+    if (toneInitialized) {
+      Tone.Transport.bpm.value = newBpm;
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-cyber-dark text-white flex flex-col">
-      <Navbar />
+      {/* Top Navigation */}
+      <div className="border-b border-cyber-purple/20 bg-cyber-darker">
+        <div className="flex items-center h-8 px-2">
+          <div className="flex space-x-4 text-xs">
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">File</Button>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Edit</Button>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Mix</Button>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Track</Button>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Sound</Button>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">View</Button>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">Help</Button>
+          </div>
+          
+          <div className="ml-auto flex items-center space-x-1">
+            <span className="text-xs text-cyber-red font-semibold">CyberDAW v1.0</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center h-10 px-2 border-t border-cyber-purple/10">
+          <div className="flex space-x-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Save className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Undo className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Redo className="h-4 w-4" />
+            </Button>
+            <div className="h-8 border-r border-cyber-purple/20 mx-1"></div>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Scissors className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="ml-auto">
+            <TransportControls 
+              isPlaying={isPlaying}
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onStop={handleStop}
+              bpm={bpm}
+              onBpmChange={handleBpmChange}
+            />
+          </div>
+        </div>
+      </div>
+      
       <AudioEngine isPlaying={isPlaying} tracks={tracks} />
       
-      <div className="flex-1 pt-16 flex flex-col">
-        <div className="flex-1 flex flex-col lg:flex-row">
-          <div className="w-full lg:w-1/4 p-4 bg-cyber-darker border-r border-cyber-purple/20">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">Tracks</h2>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-white hover:text-cyber-purple hover:bg-cyber-purple/10"
-                onClick={addTrack}
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-            </div>
-            
+      <div className="flex-1 flex">
+        {/* Left sidebar: Track List */}
+        <div className="w-56 bg-cyber-darker border-r border-cyber-purple/20 flex flex-col">
+          <div className="p-2 border-b border-cyber-purple/20 flex justify-between items-center">
+            <h3 className="text-sm font-bold">Tracks</h3>
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={addTrack}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto">
             <TrackList tracks={tracks} onTrackUpdate={updateTrack} />
-            
-            <div className="lg:hidden mt-4">
-              <Drawer>
-                <DrawerTrigger asChild>
-                  <Button className="w-full bg-cyber-purple hover:bg-cyber-purple/80">
-                    <Brain className="mr-2 h-4 w-4" />
-                    Advanced Features
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent className="bg-cyber-darker text-white p-4 max-h-[80vh]">
-                  <Tabs defaultValue="midi" value={drawerTab} onValueChange={setDrawerTab}>
-                    <TabsList className="grid grid-cols-5 mb-4">
-                      <TabsTrigger value="midi">
-                        <Music className="h-4 w-4" />
-                      </TabsTrigger>
-                      <TabsTrigger value="keyboard">
-                        <LucideKeyboard className="h-4 w-4" />
-                      </TabsTrigger>
-                      <TabsTrigger value="voice">
-                        <Mic className="h-4 w-4" />
-                      </TabsTrigger>
-                      <TabsTrigger value="ai">
-                        <Brain className="h-4 w-4" />
-                      </TabsTrigger>
-                      <TabsTrigger value="record">
-                        <Mic className="h-4 w-4" />
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="midi">
-                      <MIDIController 
-                        onNoteOn={handleMIDINoteOn}
-                        onNoteOff={handleMIDINoteOff}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="keyboard">
-                      <PianoKeyboard 
-                        onNoteOn={handleMIDINoteOn}
-                        onNoteOff={handleMIDINoteOff}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="voice">
-                      <VoiceChat projectId={projectId} />
-                    </TabsContent>
-                    
-                    <TabsContent value="ai">
-                      <AIAssistant 
-                        onGenerateProgression={handleGeneratedChordProgression}
-                        onGenerateMelody={handleGeneratedMelody}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="record">
-                      <AudioRecorder 
-                        projectId={projectId}
-                        onRecordingComplete={handleRecordingComplete}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </DrawerContent>
-              </Drawer>
+          </div>
+          
+          <div className="border-t border-cyber-purple/20 p-2">
+            <Button variant="outline" size="sm" className="w-full" onClick={() => setMainView(mainView === "arranger" ? "mixer" : "arranger")}>
+              {mainView === "arranger" ? "Show Mixer" : "Show Arranger"}
+            </Button>
+          </div>
+        </div>
+        
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col">
+          {mainView === "arranger" ? (
+            <>
+              {/* Project ruler and timeline */}
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <TimelineRuler />
+                <div className="flex-1 overflow-y-auto" ref={timelineRef}>
+                  <TrackTimeline tracks={tracks} isPlaying={isPlaying} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              <div className="h-8 border-b border-cyber-purple/20 bg-cyber-darker/50 px-2 flex items-center">
+                <span className="text-xs font-medium">Mixer View</span>
+              </div>
+              <div className="flex-1 p-2 overflow-auto">
+                <MixerControls 
+                  isPlaying={isPlaying}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onSave={handleSave}
+                  onShare={handleShare}
+                />
+              </div>
             </div>
+          )}
+        </div>
+        
+        {/* Right sidebar */}
+        <div className="w-72 border-l border-cyber-purple/20 bg-cyber-darker flex flex-col">
+          <Tabs value={rightPanelTab} onValueChange={setRightPanelTab} className="flex flex-col h-full">
+            <TabsList className="w-full p-1 h-10 bg-cyber-dark gap-1">
+              <TabsTrigger value="markers" className="text-xs h-8">Markers</TabsTrigger>
+              <TabsTrigger value="effects" className="text-xs h-8">Effects</TabsTrigger>
+              <TabsTrigger value="notes" className="text-xs h-8">Notes</TabsTrigger>
+              <TabsTrigger value="keyboard" className="text-xs h-8">Keyboard</TabsTrigger>
+              <TabsTrigger value="midi" className="text-xs h-8">MIDI</TabsTrigger>
+            </TabsList>
             
-            <div className="hidden lg:block space-y-4 mt-6">
+            <TabsContent value="markers" className="flex-1 overflow-y-auto p-2 m-0">
+              <MarkerList />
+            </TabsContent>
+            
+            <TabsContent value="effects" className="flex-1 overflow-y-auto p-2 m-0">
+              <EffectsPanel />
+            </TabsContent>
+            
+            <TabsContent value="notes" className="flex-1 overflow-y-auto p-2 m-0">
+              <NotesPanel 
+                onSubmitNotes={() => toast({ title: "Notes saved", description: "Your project notes have been saved." })}
+                onInvite={() => toast({ title: "Invite sent", description: "Collaboration invite has been sent." })}
+              />
+            </TabsContent>
+            
+            <TabsContent value="keyboard" className="flex-1 overflow-y-auto p-2 m-0">
+              <div className="glass-card p-3 rounded-lg">
+                <h3 className="text-sm font-medium mb-2">Piano Keyboard</h3>
+                <PianoKeyboard 
+                  onNoteOn={handleMIDINoteOn}
+                  onNoteOff={handleMIDINoteOff}
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="midi" className="flex-1 overflow-y-auto p-2 m-0">
               <MIDIController 
                 onNoteOn={handleMIDINoteOn}
                 onNoteOff={handleMIDINoteOff}
               />
-              <PianoKeyboard 
-                onNoteOn={handleMIDINoteOn}
-                onNoteOff={handleMIDINoteOff}
-              />
-              <AudioRecorder 
-                projectId={projectId}
-                onRecordingComplete={handleRecordingComplete}
-              />
-            </div>
-          </div>
-          
-          <div className="flex-1 flex flex-col">
-            <ProjectHeader 
-              onOpenCommentsPanel={() => setRightPanelTab("chat")}
-              onOpenCollaboratorsPanel={() => setRightPanelTab("collaborators")}
-              onOpenSettingsPanel={() => toast({ title: "Project Settings", description: "Settings panel will be available in the next update." })}
-            />
-            
-            <div className="flex-1 p-4 relative">
-              <TimelineRuler />
-              <TrackTimeline tracks={tracks} isPlaying={isPlaying} />
-            </div>
-            
-            <MixerControls 
-              isPlaying={isPlaying}
-              onPlay={handlePlay}
-              onPause={handlePause}
-              onSave={handleSave}
-              onShare={handleShare}
-            />
-          </div>
-          
-          <div className="w-full lg:w-1/4 p-4 bg-cyber-darker border-l border-cyber-purple/20 hidden lg:block">
-            <Tabs value={rightPanelTab} onValueChange={setRightPanelTab}>
-              <TabsList className="w-full grid grid-cols-4 mb-4">
-                <TabsTrigger value="effects">Effects</TabsTrigger>
-                <TabsTrigger value="notes">Notes</TabsTrigger>
-                <TabsTrigger value="chat">
-                  <MessageSquare className="h-4 w-4" />
-                </TabsTrigger>
-                <TabsTrigger value="collaborators">
-                  <Users className="h-4 w-4" />
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="effects">
-                <EffectsPanel />
-              </TabsContent>
-              
-              <TabsContent value="notes">
-                <NotesPanel 
-                  onSubmitNotes={() => toast({ title: "Notes saved", description: "Your project notes have been saved." })}
-                  onInvite={() => toast({ title: "Invite sent", description: "Collaboration invite has been sent." })}
-                />
-              </TabsContent>
-              
-              <TabsContent value="chat" className="h-[calc(100vh-210px)]">
-                <Chat user={user} />
-              </TabsContent>
-              
-              <TabsContent value="collaborators">
-                <CollaboratorsList collaborators={collaborators} />
-              </TabsContent>
-              
-              <TabsContent value="voice">
-                <VoiceChat projectId={projectId} />
-              </TabsContent>
-              
-              <TabsContent value="ai">
-                <AIAssistant 
-                  onGenerateProgression={handleGeneratedChordProgression}
-                  onGenerateMelody={handleGeneratedMelody}
-                />
-              </TabsContent>
-            </Tabs>
-            
-            <div className="mt-4 pt-4 border-t border-cyber-purple/20">
-              <Button 
-                variant="outline" 
-                className="w-full border-cyber-purple/30 hover:bg-cyber-purple/10 mb-2"
-                onClick={() => setRightPanelTab("voice")}
-              >
-                <Mic className="mr-2 h-4 w-4" /> 
-                Voice Chat
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full border-cyber-purple/30 hover:bg-cyber-purple/10"
-                onClick={() => setRightPanelTab("ai")}
-              >
-                <Brain className="mr-2 h-4 w-4" /> 
-                AI Assistant
-              </Button>
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+      
+      {/* Status bar */}
+      <div className="h-6 bg-cyber-darker border-t border-cyber-purple/20 px-3 flex items-center text-xs text-cyber-purple/70">
+        <div className="flex-1">Ready</div>
+        <div className="flex space-x-4">
+          <span>48000 Hz, Stereo</span>
+          <span>{bpm} BPM</span>
+          <span>4/4</span>
+          <span>CPU: 10%</span>
         </div>
       </div>
     </div>
