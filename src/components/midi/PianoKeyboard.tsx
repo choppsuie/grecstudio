@@ -1,10 +1,10 @@
-
 import React, { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useSynth } from "@/hooks/useSynth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Volume2 } from "lucide-react";
+import * as Tone from "tone";
 
 // Define range and white/black key mapping
 const WHITE_KEYS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];

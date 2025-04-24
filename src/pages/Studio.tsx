@@ -1,11 +1,10 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import TrackList from "@/components/TrackList";
 import MixerControls from "@/components/MixerControls";
 import AudioEngine from "@/components/AudioEngine";
 import { Button } from "@/components/ui/button";
-import { Plus, MessageSquare, Users, Mic, Music, Brain, Keyboard as LucideKeyboard, Settings, Save, Share2, Scissors, Copy, Trash2, Undo, Redo, Record } from "lucide-react";
+import { Plus, MessageSquare, Users, Mic, Music, Brain, Keyboard as LucideKeyboard, Settings, Save, Share2, Scissors, Copy, Trash2, Undo, Redo } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +27,7 @@ import TransportControls from "@/components/studio/TransportControls";
 import MarkerList from "@/components/studio/MarkerList";
 import StudioMenubar from "@/components/studio/StudioMenubar";
 import * as Tone from "tone";
+import { cn } from "@/lib/utils";
 
 const Studio = () => {
   const { toast } = useToast();
@@ -247,7 +247,7 @@ const Studio = () => {
               className={cn("h-8 w-8", isRecording && "animate-pulse")} 
               onClick={handleRecord}
             >
-              <Record className="h-4 w-4" />
+              <Mic className="h-4 w-4" />
             </Button>
           </div>
           
@@ -369,7 +369,7 @@ const Studio = () => {
       {isRecording && (
         <div className="fixed bottom-16 right-6 bg-cyber-darker border border-cyber-red/50 p-3 rounded-lg shadow-lg animate-pulse">
           <AudioRecorder 
-            isRecording={isRecording} 
+            projectId="demo-project"
             onRecordingComplete={handleRecordingComplete} 
           />
         </div>

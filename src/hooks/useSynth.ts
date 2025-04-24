@@ -1,4 +1,3 @@
-
 import { useRef, useState } from "react";
 import * as Tone from "tone";
 
@@ -23,40 +22,40 @@ export function useSynth() {
     }
     
     let synthOptions = {};
-    let synthClass = Tone.Synth;
     
     // Configure synth based on type
     switch (type) {
       case "fm":
-        synthClass = Tone.FMSynth;
-        synthOptions = {
+        synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+          volume: -8,
           modulationIndex: 10,
           harmonicity: 3.01
-        };
+        }).toDestination();
         break;
       case "am":
-        synthClass = Tone.AMSynth;
-        synthOptions = {
+        synthRef.current = new Tone.PolySynth(Tone.AMSynth, {
+          volume: -8,
           harmonicity: 2.5
-        };
+        }).toDestination();
         break;
       case "membrane":
-        synthClass = Tone.MembraneSynth;
-        synthOptions = {
+        synthRef.current = new Tone.PolySynth(Tone.MembraneSynth, {
+          volume: -8,
           octaves: 4,
           pitchDecay: 0.1
-        };
+        }).toDestination();
         break;
       case "pluck":
-        synthClass = Tone.PluckSynth;
-        synthOptions = {
+        synthRef.current = new Tone.PolySynth(Tone.PluckSynth, {
+          volume: -8,
           attackNoise: 1,
           dampening: 4000,
           resonance: 0.7
-        };
+        }).toDestination();
         break;
       default: // "basic"
-        synthOptions = {
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -8,
           oscillator: {
             type: "triangle8"
           },
@@ -66,14 +65,8 @@ export function useSynth() {
             sustain: 0.2,
             release: 0.8,
           }
-        };
+        }).toDestination();
     }
-    
-    // Create new synth
-    synthRef.current = new Tone.PolySynth(synthClass, {
-      volume: -8, // softer default
-      ...synthOptions
-    }).toDestination();
     
     // Add reverb for more pleasing sound
     const reverb = new Tone.Reverb(1.5).toDestination();
