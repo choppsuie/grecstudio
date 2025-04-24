@@ -1,60 +1,90 @@
+
 import { useRef, useState } from "react";
 import * as Tone from "tone";
 
 type PlayNote = (midi: number, velocity?: number) => void;
 type StopNote = (midi: number) => void;
-type SynthType = "basic" | "fm" | "am" | "membrane" | "pluck";
+type SynthType = "basic" | "fm" | "am" | "membrane" | "pluck" | "duo" | "metal" | "piano";
 
-/**
- * Enhanced PolySynth hook for piano/keyboard playback via Tone.js.
- * Supports multiple synth types for different sounds.
- * Usage: const { playNote, stopNote, changeSynthType, currentSynth } = useSynth();
- */
 export function useSynth() {
-  // Keep synth instance across renders
   const synthRef = useRef<Tone.PolySynth | null>(null);
   const [currentSynth, setCurrentSynth] = useState<SynthType>("basic");
   
   const createSynth = (type: SynthType) => {
-    // Dispose old synth if it exists
     if (synthRef.current) {
       synthRef.current.dispose();
     }
     
-    let synthOptions = {};
-    
-    // Configure synth based on type
     switch (type) {
       case "fm":
-        synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+        synthRef.current = new Tone.PolySynth(Tone.FMSynth).toDestination();
+        synthRef.current.set({
           volume: -8,
           modulationIndex: 10,
           harmonicity: 3.01
-        }).toDestination();
+        });
         break;
       case "am":
-        synthRef.current = new Tone.PolySynth(Tone.AMSynth, {
+        synthRef.current = new Tone.PolySynth(Tone.AMSynth).toDestination();
+        synthRef.current.set({
           volume: -8,
           harmonicity: 2.5
-        }).toDestination();
+        });
         break;
       case "membrane":
-        synthRef.current = new Tone.PolySynth(Tone.MembraneSynth, {
+        synthRef.current = new Tone.PolySynth(Tone.MembraneSynth).toDestination();
+        synthRef.current.set({
           volume: -8,
           octaves: 4,
           pitchDecay: 0.1
-        }).toDestination();
+        });
+        break;
+      case "duo":
+        synthRef.current = new Tone.PolySynth(Tone.DuoSynth).toDestination();
+        synthRef.current.set({
+          volume: -12,
+          vibratoAmount: 0.5,
+          harmonicity: 1.5,
+        });
+        break;
+      case "metal":
+        synthRef.current = new Tone.PolySynth(Tone.MetalSynth).toDestination();
+        synthRef.current.set({
+          volume: -15,
+          resonance: 100,
+          harmonicity: 5.1
+        });
+        break;
+      case "piano":
+        synthRef.current = new Tone.PolySynth(Tone.Synth).toDestination();
+        synthRef.current.set({
+          volume: -8,
+          oscillator: {
+            type: "sine"
+          },
+          envelope: {
+            attack: 0.005,
+            decay: 3,
+            sustain: 0,
+            release: 1
+          }
+        });
         break;
       case "pluck":
-        synthRef.current = new Tone.PolySynth(Tone.PluckSynth, {
-          volume: -8,
+        // Handle pluck synth differently due to its unique architecture
+        const pluck = new Tone.PluckSynth({
           attackNoise: 1,
           dampening: 4000,
-          resonance: 0.7
+          resonance: 0.95
         }).toDestination();
+        synthRef.current = new Tone.PolySynth().toDestination();
+        synthRef.current.set({
+          volume: -8
+        });
         break;
       default: // "basic"
-        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+        synthRef.current = new Tone.PolySynth(Tone.Synth).toDestination();
+        synthRef.current.set({
           volume: -8,
           oscillator: {
             type: "triangle8"
@@ -65,33 +95,25 @@ export function useSynth() {
             sustain: 0.2,
             release: 0.8,
           }
-        }).toDestination();
+        });
     }
     
-    // Add reverb for more pleasing sound
     const reverb = new Tone.Reverb(1.5).toDestination();
     synthRef.current.connect(reverb);
-    
-    return synthRef.current;
   };
   
-  // Initialize synth if it doesn't exist
   if (!synthRef.current) {
     createSynth(currentSynth);
   }
 
-  // Change synth type
   const changeSynthType = (type: SynthType) => {
     setCurrentSynth(type);
     createSynth(type);
   };
 
-  // Helper functions: MIDI note number -> "C4" etc.
   const playNote: PlayNote = (midi, velocity = 100) => {
     Tone.start();
-    // convert MIDI number to note like "C4"
     const note = Tone.Frequency(midi, "midi").toNote();
-    // velocity: 0-127, Tone.js: 0-1
     synthRef.current!.triggerAttack(note, undefined, velocity / 127);
   };
 

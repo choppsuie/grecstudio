@@ -28,6 +28,7 @@ import MarkerList from "@/components/studio/MarkerList";
 import StudioMenubar from "@/components/studio/StudioMenubar";
 import * as Tone from "tone";
 import { cn } from "@/lib/utils";
+import StudioHeader from "@/components/studio/StudioHeader";
 
 const Studio = () => {
   const { toast } = useToast();
@@ -215,6 +216,8 @@ const Studio = () => {
   
   return (
     <div className="min-h-screen bg-cyber-dark text-white flex flex-col">
+      <StudioHeader />
+      
       {/* Top Navigation */}
       <div className="border-b border-cyber-purple/20 bg-cyber-darker">
         <StudioMenubar />
@@ -367,9 +370,9 @@ const Studio = () => {
       
       {/* Audio recorder component (visible when recording) */}
       {isRecording && (
-        <div className="fixed bottom-16 right-6 bg-cyber-darker border border-cyber-red/50 p-3 rounded-lg shadow-lg animate-pulse">
+        <div className="fixed bottom-16 right-6 bg-cyber-darker/95 border border-cyber-red/50 p-3 rounded-lg shadow-lg backdrop-blur-sm">
           <AudioRecorder 
-            projectId="demo-project"
+            projectId={projectId}
             onRecordingComplete={handleRecordingComplete} 
           />
         </div>
