@@ -22,7 +22,7 @@ import MIDIController from "@/components/midi/MIDIController";
 import VoiceChat from "@/components/voice/VoiceChat";
 import AIAssistant from "@/components/ai/AIAssistant";
 import AudioRecorder from "@/components/audio/AudioRecorder";
-import PianoKeyboard from "@/components/midi/PianoKeyboard";
+import PianoKeyboard from "@/components/midi/piano/PianoKeyboard";
 import TransportControls from "@/components/studio/TransportControls";
 import MarkerList from "@/components/studio/MarkerList";
 import StudioMenubar from "@/components/studio/StudioMenubar";
