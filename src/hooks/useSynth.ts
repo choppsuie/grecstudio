@@ -2,16 +2,13 @@
 import { useRef, useState } from "react";
 import * as Tone from "tone";
 
-type PlayNote = (midi: number, velocity?: number) => void;
-type StopNote = (midi: number) => void;
 type SynthType = "basic" | "fm" | "am" | "membrane" | "pluck" | "duo" | "metal" | "piano";
 
-interface CustomPolySynth extends Tone.PolySynth {
-  set: (options: any) => void;
-}
+// Generic type for any Tone.js synth
+type ToneSynth = Tone.PolySynth<any>;
 
 export function useSynth() {
-  const synthRef = useRef<CustomPolySynth | null>(null);
+  const synthRef = useRef<ToneSynth | null>(null);
   const [currentSynth, setCurrentSynth] = useState<SynthType>("basic");
   
   const createSynth = (type: SynthType) => {
@@ -19,11 +16,11 @@ export function useSynth() {
       synthRef.current.dispose();
     }
     
-    let newSynth: CustomPolySynth;
+    let newSynth: ToneSynth;
     
     switch (type) {
       case "fm":
-        newSynth = new Tone.PolySynth(Tone.FMSynth).toDestination() as CustomPolySynth;
+        newSynth = new Tone.PolySynth(Tone.FMSynth).toDestination();
         newSynth.set({
           volume: -8,
           modulationIndex: 10,
@@ -31,14 +28,14 @@ export function useSynth() {
         });
         break;
       case "am":
-        newSynth = new Tone.PolySynth(Tone.AMSynth).toDestination() as CustomPolySynth;
+        newSynth = new Tone.PolySynth(Tone.AMSynth).toDestination();
         newSynth.set({
           volume: -8,
           harmonicity: 2.5
         });
         break;
       case "membrane":
-        newSynth = new Tone.PolySynth(Tone.MembraneSynth).toDestination() as CustomPolySynth;
+        newSynth = new Tone.PolySynth(Tone.MembraneSynth).toDestination();
         newSynth.set({
           volume: -8,
           octaves: 4,
@@ -46,7 +43,7 @@ export function useSynth() {
         });
         break;
       case "duo":
-        newSynth = new Tone.PolySynth(Tone.DuoSynth).toDestination() as CustomPolySynth;
+        newSynth = new Tone.PolySynth(Tone.DuoSynth).toDestination();
         newSynth.set({
           volume: -12,
           vibratoAmount: 0.5,
@@ -54,7 +51,7 @@ export function useSynth() {
         });
         break;
       case "metal":
-        newSynth = new Tone.PolySynth(Tone.MetalSynth).toDestination() as CustomPolySynth;
+        newSynth = new Tone.PolySynth(Tone.MetalSynth).toDestination();
         newSynth.set({
           volume: -15,
           resonance: 100,
@@ -62,7 +59,7 @@ export function useSynth() {
         });
         break;
       case "piano":
-        newSynth = new Tone.PolySynth(Tone.Synth).toDestination() as CustomPolySynth;
+        newSynth = new Tone.PolySynth(Tone.Synth).toDestination();
         newSynth.set({
           volume: -8,
           oscillator: {
@@ -77,16 +74,19 @@ export function useSynth() {
         });
         break;
       case "pluck":
-        newSynth = new Tone.PolySynth(Tone.PluckSynth).toDestination() as CustomPolySynth;
+        newSynth = new Tone.PolySynth(Tone.Synth).toDestination();
         newSynth.set({
           volume: -8,
-          attackNoise: 1,
-          dampening: 4000,
-          resonance: 0.95
+          envelope: {
+            attack: 0.001,
+            decay: 1.5,
+            sustain: 0,
+            release: 1.5
+          }
         });
         break;
       default: // "basic"
-        newSynth = new Tone.PolySynth(Tone.Synth).toDestination() as CustomPolySynth;
+        newSynth = new Tone.PolySynth(Tone.Synth).toDestination();
         newSynth.set({
           volume: -8,
           oscillator: {
@@ -115,13 +115,13 @@ export function useSynth() {
     createSynth(type);
   };
 
-  const playNote: PlayNote = (midi, velocity = 100) => {
+  const playNote = (midi: number, velocity = 100) => {
     Tone.start();
     const note = Tone.Frequency(midi, "midi").toNote();
     synthRef.current!.triggerAttack(note, undefined, velocity / 127);
   };
 
-  const stopNote: StopNote = (midi) => {
+  const stopNote = (midi: number) => {
     const note = Tone.Frequency(midi, "midi").toNote();
     synthRef.current!.triggerRelease(note);
   };

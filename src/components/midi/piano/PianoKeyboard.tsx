@@ -1,10 +1,10 @@
-
 import React, { useState, useCallback } from "react";
 import { useSynth } from "@/hooks/useSynth";
-import * as Tone from "tone";
+import { usePianoKeyboardEvents } from "@/hooks/usePianoKeyboardEvents";
 import Key from "./Key";
 import SynthControls from "./SynthControls";
 import { KEY_WIDTH, KEY_HEIGHT, BLACK_KEY_HEIGHT, BLACK_KEY_WIDTH, createNoteList, getNoteLabel, isWhiteKey } from "./utils";
+import * as Tone from "tone";
 
 type PianoKeyboardProps = {
   onNoteOn?: (note: number, velocity: number) => void;
@@ -33,22 +33,8 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
     stopNote(note);
   }, [onNoteOff, stopNote]);
 
-  // Keyboard accessibility
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const keyMap: { [key: string]: number } = {
-      a: 60, w: 61, s: 62, e: 63, d: 64, f: 65, t: 66,
-      g: 67, y: 68, h: 69, u: 70, j: 71, k: 72
-    };
-    if (keyMap[e.key]) handleDown(keyMap[e.key]);
-  }, [handleDown]);
-
-  const handleKeyUp = useCallback((e: React.KeyboardEvent) => {
-    const keyMap: { [key: string]: number } = {
-      a: 60, w: 61, s: 62, e: 63, d: 64, f: 65, t: 66,
-      g: 67, y: 68, h: 69, u: 70, j: 71, k: 72
-    };
-    if (keyMap[e.key]) handleUp(keyMap[e.key]);
-  }, [handleUp]);
+  // Get keyboard event handlers from our custom hook
+  const { handleKeyDown, handleKeyUp } = usePianoKeyboardEvents(handleDown, handleUp);
 
   // Handle synth changes
   const handleSynthChange = (value: string) => {
