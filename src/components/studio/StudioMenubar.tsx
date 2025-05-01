@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Menubar,
   MenubarContent,
@@ -12,16 +12,28 @@ import {
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
+  MenubarRadioGroup,
+  MenubarRadioItem,
 } from "@/components/ui/menubar";
 import { useToast } from "@/hooks/use-toast";
+import { useSynth } from "@/hooks/useSynth";
 
 const StudioMenubar = () => {
   const { toast } = useToast();
+  const { changeSynthType, currentSynth } = useSynth();
 
   const handleAction = (action: string) => {
     toast({
       title: action,
       description: `${action} action triggered`,
+    });
+  };
+
+  const handleSynthChange = (type: "basic" | "fm" | "am" | "membrane" | "pluck" | "duo" | "metal" | "piano") => {
+    changeSynthType(type);
+    toast({
+      title: "Synth Changed",
+      description: `Changed to ${type} synthesizer`,
     });
   };
 
@@ -44,8 +56,23 @@ const StudioMenubar = () => {
             Save As... <MenubarShortcut>⇧⌘S</MenubarShortcut>
           </MenubarItem>
           <MenubarSeparator />
-          <MenubarItem onClick={() => handleAction("Export")}>
-            Export <MenubarShortcut>⌘E</MenubarShortcut>
+          <MenubarSub>
+            <MenubarSubTrigger>Export</MenubarSubTrigger>
+            <MenubarSubContent className="bg-cyber-darker border-cyber-purple/30">
+              <MenubarItem onClick={() => handleAction("Export as MP3")}>
+                MP3
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Export as WAV")}>
+                WAV
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Export as Stems")}>
+                Stems
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
+          <MenubarSeparator />
+          <MenubarItem onClick={() => handleAction("Project Settings")}>
+            Project Settings
           </MenubarItem>
           <MenubarSeparator />
           <MenubarItem onClick={() => handleAction("Exit")}>Exit</MenubarItem>
@@ -75,6 +102,13 @@ const StudioMenubar = () => {
           <MenubarItem onClick={() => handleAction("Select All")}>
             Select All <MenubarShortcut>⌘A</MenubarShortcut>
           </MenubarItem>
+          <MenubarSeparator />
+          <MenubarItem onClick={() => handleAction("Split at Playhead")}>
+            Split at Playhead <MenubarShortcut>⌘B</MenubarShortcut>
+          </MenubarItem>
+          <MenubarItem onClick={() => handleAction("Group Selected")}>
+            Group Selected <MenubarShortcut>⌘G</MenubarShortcut>
+          </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
 
@@ -85,9 +119,17 @@ const StudioMenubar = () => {
             Show Mixer
           </MenubarItem>
           <MenubarSeparator />
-          <MenubarItem onClick={() => handleAction("Add Audio Effect")}>
-            Add Audio Effect
-          </MenubarItem>
+          <MenubarSub>
+            <MenubarSubTrigger>Add Effects</MenubarSubTrigger>
+            <MenubarSubContent className="bg-cyber-darker border-cyber-purple/30">
+              <MenubarItem onClick={() => handleAction("Add Reverb")}>Reverb</MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add Delay")}>Delay</MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add Compressor")}>Compressor</MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add EQ")}>Equalizer</MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add Chorus")}>Chorus</MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add Distortion")}>Distortion</MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
           <MenubarItem onClick={() => handleAction("Add Instrument")}>
             Add Instrument
           </MenubarItem>
@@ -103,6 +145,13 @@ const StudioMenubar = () => {
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
+          <MenubarSeparator />
+          <MenubarItem onClick={() => handleAction("Normalize Levels")}>
+            Normalize Levels
+          </MenubarItem>
+          <MenubarItem onClick={() => handleAction("Auto-Mix")}>
+            Auto-Mix
+          </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
 
@@ -110,14 +159,20 @@ const StudioMenubar = () => {
         <MenubarTrigger className="h-8 px-3 text-xs font-medium">Track</MenubarTrigger>
         <MenubarContent className="bg-cyber-darker border-cyber-purple/30">
           <MenubarItem onClick={() => handleAction("Add Audio Track")}>
-            Add Audio Track
+            Add Audio Track <MenubarShortcut>⇧⌘A</MenubarShortcut>
           </MenubarItem>
           <MenubarItem onClick={() => handleAction("Add MIDI Track")}>
-            Add MIDI Track
+            Add MIDI Track <MenubarShortcut>⇧⌘M</MenubarShortcut>
+          </MenubarItem>
+          <MenubarItem onClick={() => handleAction("Add Instrument Track")}>
+            Add Instrument Track <MenubarShortcut>⇧⌘I</MenubarShortcut>
+          </MenubarItem>
+          <MenubarItem onClick={() => handleAction("Add Drum Track")}>
+            Add Drum Track <MenubarShortcut>⇧⌘D</MenubarShortcut>
           </MenubarItem>
           <MenubarSeparator />
           <MenubarItem onClick={() => handleAction("Delete Selected Track")}>
-            Delete Selected Track
+            Delete Selected Track <MenubarShortcut>⌫</MenubarShortcut>
           </MenubarItem>
           <MenubarSeparator />
           <MenubarSub>
@@ -128,6 +183,15 @@ const StudioMenubar = () => {
               </MenubarItem>
               <MenubarItem onClick={() => handleAction("Track Rename")}>
                 Rename
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Track Duplicate")}>
+                Duplicate
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Track Freeze")}>
+                Freeze Track
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Track Bounce")}>
+                Bounce to Audio
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
@@ -141,6 +205,61 @@ const StudioMenubar = () => {
             Sound Browser
           </MenubarItem>
           <MenubarSeparator />
+          <MenubarSub>
+            <MenubarSubTrigger>Synthesizers</MenubarSubTrigger>
+            <MenubarSubContent className="bg-cyber-darker border-cyber-purple/30">
+              <MenubarRadioGroup value={currentSynth}>
+                <MenubarRadioItem value="basic" onClick={() => handleSynthChange("basic")}>
+                  Basic Synth
+                </MenubarRadioItem>
+                <MenubarRadioItem value="fm" onClick={() => handleSynthChange("fm")}>
+                  FM Synth
+                </MenubarRadioItem>
+                <MenubarRadioItem value="am" onClick={() => handleSynthChange("am")}>
+                  AM Synth
+                </MenubarRadioItem>
+                <MenubarRadioItem value="duo" onClick={() => handleSynthChange("duo")}>
+                  Duo Synth
+                </MenubarRadioItem>
+                <MenubarRadioItem value="metal" onClick={() => handleSynthChange("metal")}>
+                  Metal Synth
+                </MenubarRadioItem>
+                <MenubarRadioItem value="membrane" onClick={() => handleSynthChange("membrane")}>
+                  Membrane Synth
+                </MenubarRadioItem>
+                <MenubarRadioItem value="pluck" onClick={() => handleSynthChange("pluck")}>
+                  Pluck Synth
+                </MenubarRadioItem>
+                <MenubarRadioItem value="piano" onClick={() => handleSynthChange("piano")}>
+                  Piano Synth
+                </MenubarRadioItem>
+              </MenubarRadioGroup>
+            </MenubarSubContent>
+          </MenubarSub>
+          <MenubarSub>
+            <MenubarSubTrigger>Virtual Instruments</MenubarSubTrigger>
+            <MenubarSubContent className="bg-cyber-darker border-cyber-purple/30">
+              <MenubarItem onClick={() => handleAction("Open Piano")}>
+                Piano
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Open Drums")}>
+                Drum Pads
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Open Bass")}>
+                Bass
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Open Guitar")}>
+                Guitar
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Open Strings")}>
+                Strings
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Open Brass")}>
+                Brass
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
+          <MenubarSeparator />
           <MenubarItem onClick={() => handleAction("Import Sample")}>
             Import Sample
           </MenubarItem>
@@ -148,6 +267,30 @@ const StudioMenubar = () => {
             Record Audio
           </MenubarItem>
           <MenubarSeparator />
+          <MenubarSub>
+            <MenubarSubTrigger>Plugins</MenubarSubTrigger>
+            <MenubarSubContent className="bg-cyber-darker border-cyber-purple/30">
+              <MenubarItem onClick={() => handleAction("Manage Plugins")}>
+                Manage Plugins
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onClick={() => handleAction("Add Reverb Plugin")}>
+                Reverb
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add Delay Plugin")}>
+                Delay
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add Compressor Plugin")}>
+                Compressor
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add EQ Plugin")}>
+                Equalizer
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction("Add VST Plugin")}>
+                Load VST...
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
           <MenubarItem onClick={() => handleAction("Create Drum Pattern")}>
             Create Drum Pattern
           </MenubarItem>
@@ -166,12 +309,33 @@ const StudioMenubar = () => {
           <MenubarCheckboxItem onClick={() => handleAction("Toggle Piano Roll")}>
             Piano Roll
           </MenubarCheckboxItem>
+          <MenubarCheckboxItem onClick={() => handleAction("Toggle Effects Panel")}>
+            Effects Panel
+          </MenubarCheckboxItem>
+          <MenubarSeparator />
+          <MenubarSub>
+            <MenubarSubTrigger>Windows</MenubarSubTrigger>
+            <MenubarSubContent className="bg-cyber-darker border-cyber-purple/30">
+              <MenubarCheckboxItem onClick={() => handleAction("Toggle Drum Editor")}>
+                Drum Editor
+              </MenubarCheckboxItem>
+              <MenubarCheckboxItem onClick={() => handleAction("Toggle Automation")}>
+                Automation
+              </MenubarCheckboxItem>
+              <MenubarCheckboxItem onClick={() => handleAction("Toggle Sample Browser")}>
+                Sample Browser
+              </MenubarCheckboxItem>
+            </MenubarSubContent>
+          </MenubarSub>
           <MenubarSeparator />
           <MenubarItem onClick={() => handleAction("Zoom In")}>
             Zoom In <MenubarShortcut>⌘+</MenubarShortcut>
           </MenubarItem>
           <MenubarItem onClick={() => handleAction("Zoom Out")}>
             Zoom Out <MenubarShortcut>⌘-</MenubarShortcut>
+          </MenubarItem>
+          <MenubarItem onClick={() => handleAction("Fit to Window")}>
+            Fit to Window
           </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
@@ -185,8 +349,15 @@ const StudioMenubar = () => {
           <MenubarItem onClick={() => handleAction("Keyboard Shortcuts")}>
             Keyboard Shortcuts
           </MenubarItem>
+          <MenubarItem onClick={() => handleAction("Video Tutorials")}>
+            Video Tutorials
+          </MenubarItem>
           <MenubarSeparator />
-          <MenubarItem onClick={() => handleAction("About")}>
+          <MenubarItem onClick={() => handleAction("Check for Updates")}>
+            Check for Updates
+          </MenubarItem>
+          <MenubarSeparator />
+          <MenubarItem onClick={() => handleAction("About CyberDAW")}>
             About CyberDAW
           </MenubarItem>
         </MenubarContent>

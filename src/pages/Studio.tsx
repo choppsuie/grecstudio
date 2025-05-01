@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import TrackList from "@/components/TrackList";
@@ -23,9 +24,11 @@ import VoiceChat from "@/components/voice/VoiceChat";
 import AIAssistant from "@/components/ai/AIAssistant";
 import AudioRecorder from "@/components/audio/AudioRecorder";
 import PianoKeyboard from "@/components/midi/piano/PianoKeyboard";
+import DrumPads from "@/components/midi/DrumPads";
 import TransportControls from "@/components/studio/TransportControls";
 import MarkerList from "@/components/studio/MarkerList";
 import StudioMenubar from "@/components/studio/StudioMenubar";
+import PluginsPanel from "@/components/studio/PluginsPanel";
 import * as Tone from "tone";
 import { cn } from "@/lib/utils";
 import StudioHeader from "@/components/studio/StudioHeader";
@@ -331,8 +334,10 @@ const Studio = () => {
             <TabsList className="w-full p-1 h-10 bg-cyber-dark gap-1">
               <TabsTrigger value="markers" className="text-xs h-8">Markers</TabsTrigger>
               <TabsTrigger value="effects" className="text-xs h-8">Effects</TabsTrigger>
+              <TabsTrigger value="plugins" className="text-xs h-8">Plugins</TabsTrigger>
               <TabsTrigger value="notes" className="text-xs h-8">Notes</TabsTrigger>
               <TabsTrigger value="keyboard" className="text-xs h-8">Keyboard</TabsTrigger>
+              <TabsTrigger value="drums" className="text-xs h-8">Drums</TabsTrigger>
               <TabsTrigger value="midi" className="text-xs h-8">MIDI</TabsTrigger>
             </TabsList>
             
@@ -342,6 +347,10 @@ const Studio = () => {
             
             <TabsContent value="effects" className="flex-1 overflow-y-auto p-2 m-0">
               <EffectsPanel />
+            </TabsContent>
+            
+            <TabsContent value="plugins" className="flex-1 overflow-y-auto p-2 m-0">
+              <PluginsPanel />
             </TabsContent>
             
             <TabsContent value="notes" className="flex-1 overflow-y-auto p-2 m-0">
@@ -356,6 +365,10 @@ const Studio = () => {
                 onNoteOn={handleMIDINoteOn}
                 onNoteOff={handleMIDINoteOff}
               />
+            </TabsContent>
+            
+            <TabsContent value="drums" className="flex-1 overflow-y-auto p-2 m-0">
+              <DrumPads />
             </TabsContent>
             
             <TabsContent value="midi" className="flex-1 overflow-y-auto p-2 m-0">

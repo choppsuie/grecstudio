@@ -47,17 +47,10 @@ export function useSynth() {
         newSynth.set({
           volume: -12,
           harmonicity: 1.5,
-          // Remove vibratoAmount as it doesn't exist in the type
-          // Using properties that exist in DuoSynth
-          voice0: {
-            oscillator: {
-              type: "sine"
-            }
-          },
-          voice1: {
-            oscillator: {
-              type: "sine"
-            }
+          // DuoSynth doesn't use voice0/voice1 directly in this way
+          // Instead we can use the oscillator settings
+          oscillator: {
+            type: "sine"
           }
         });
         break;
