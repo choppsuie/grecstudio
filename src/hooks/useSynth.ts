@@ -46,8 +46,19 @@ export function useSynth() {
         newSynth = new Tone.PolySynth(Tone.DuoSynth).toDestination();
         newSynth.set({
           volume: -12,
-          vibratoAmount: 0.5,
           harmonicity: 1.5,
+          // Remove vibratoAmount as it doesn't exist in the type
+          // Using properties that exist in DuoSynth
+          voice0: {
+            oscillator: {
+              type: "sine"
+            }
+          },
+          voice1: {
+            oscillator: {
+              type: "sine"
+            }
+          }
         });
         break;
       case "metal":
