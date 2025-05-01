@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -108,7 +107,7 @@ const MixerControls = ({
   const registerFaderRef = (id: string, el: HTMLDivElement | null) => {
     faderRefs.current[id] = el;
   };
-  
+
   return (
     <div className="relative">
       {showFaders && (

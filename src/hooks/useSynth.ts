@@ -47,8 +47,6 @@ export function useSynth() {
         newSynth.set({
           volume: -12,
           harmonicity: 1.5,
-          // DuoSynth doesn't use voice0/voice1 directly in this way
-          // Instead we can use the oscillator settings
           oscillator: {
             type: "sine"
           }
