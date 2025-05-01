@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 import { useToast } from '@/hooks/use-toast';
@@ -195,7 +194,7 @@ export const StudioProvider: React.FC<StudioProviderProps> = ({ children }) => {
     }
   };
   
-  // Fix: Modified to not take any arguments
+  // Make sure toggleMixer takes no arguments and there are no calls with arguments
   const toggleMixer = () => {
     setShowMixer(!showMixer);
   };
