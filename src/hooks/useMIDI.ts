@@ -120,7 +120,8 @@ export const useMIDI = (onNoteOn?: MIDICallback, onNoteOff?: MIDICallback) => {
     } 
     // Note off
     else if (cmd === 8 || (cmd === 9 && velocity === 0)) {
-      onNoteOff?.(noteNumber);
+      // Fix: Pass the velocity (0) as the second argument, as required by the type
+      onNoteOff?.(noteNumber, 0);
     }
   };
   

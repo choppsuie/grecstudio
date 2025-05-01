@@ -195,7 +195,7 @@ export const StudioProvider: React.FC<StudioProviderProps> = ({ children }) => {
     }
   };
   
-  // Fixed function with no arguments
+  // Fix: Modified to not take any arguments
   const toggleMixer = () => {
     setShowMixer(!showMixer);
   };
