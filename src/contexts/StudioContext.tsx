@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 import { useToast } from '@/hooks/use-toast';
@@ -195,6 +194,7 @@ export const StudioProvider: React.FC<StudioProviderProps> = ({ children }) => {
     }
   };
   
+  // Fix the error in this function by removing the argument
   const toggleMixer = () => {
     setShowMixer(!showMixer);
   };
