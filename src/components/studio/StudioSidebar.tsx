@@ -1,14 +1,13 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sliders, Music, Layers, MessageSquare } from "lucide-react";
+import { Sliders, Music, Layers } from "lucide-react";
 import PluginsPanel from './PluginsPanel';
 import DrumPads from '../midi/DrumPads';
 import MIDIKeyboardPanel from './MIDIKeyboardPanel';
-import { useStudio } from '@/contexts/StudioContext';
+import { useProject } from '@/contexts/StudioHooks';
 
 const StudioSidebar = () => {
-  const { showMixer } = useStudio();
+  const { showMixer } = useProject();
   const [activeTab, setActiveTab] = useState("plugins");
   
   if (!showMixer) return null;

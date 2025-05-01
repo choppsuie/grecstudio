@@ -1,7 +1,7 @@
 
 import React from 'react';
 import AudioRecorder from '@/components/audio/AudioRecorder';
-import { useStudio } from '@/contexts/StudioContext';
+import { useStudio } from '@/contexts/StudioHooks'; // Updated import path
 
 const StudioRecorder = () => {
   const { isRecording, projectId, handleRecordingComplete } = useStudio();

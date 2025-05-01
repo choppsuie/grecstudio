@@ -1,6 +1,7 @@
 
 import React from "react";
-import { StudioProvider, useStudio } from "@/contexts/StudioContext";
+import { StudioProvider } from "@/contexts/StudioContext";
+import { useStudio } from "@/contexts/StudioHooks"; // Updated import path
 import StudioToolbar from "@/components/studio/StudioToolbar";
 import StudioContent from "@/components/studio/StudioContent";
 import StudioStatusBar from "@/components/studio/StudioStatusBar";

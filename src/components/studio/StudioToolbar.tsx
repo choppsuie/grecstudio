@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Save, Undo, Redo, Scissors, Copy, Trash2, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TransportControls from "@/components/studio/TransportControls";
-import { useStudio } from "@/contexts/StudioContext";
+import { useStudio } from "@/contexts/StudioHooks";
 
 const StudioToolbar = () => {
   const { 
