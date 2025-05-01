@@ -2,7 +2,7 @@
 import React from 'react';
 import MIDIController from '../midi/MIDIController';
 import PianoKeyboard from '../midi/PianoKeyboard';
-import { useStudio } from '@/contexts/StudioContext';
+import { useStudio } from '@/contexts/StudioHooks';
 import { Separator } from '@/components/ui/separator';
 
 const MIDIKeyboardPanel = () => {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useStudio } from '@/contexts/StudioHooks'; // Updated import path
+import { useStudio } from '@/contexts/StudioHooks';
 
 const StudioStatusBar = () => {
   const { isRecording, bpm } = useStudio();

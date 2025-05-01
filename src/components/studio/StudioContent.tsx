@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useStudio } from '@/contexts/StudioHooks'; // Updated import path
+import { useStudio } from '@/contexts/StudioHooks';
 import TrackList from '@/components/TrackList';
 import { useTrackManager } from '@/hooks/useTrackManager';
 import StudioSidebar from './StudioSidebar';
