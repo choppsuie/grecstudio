@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import * as Tone from "tone";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Volume2, Settings, Music } from "lucide-react";
+import { Volume2, Settings, Music, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useDrumKit, DrumKitType } from "@/hooks/useDrumKit";
 
@@ -11,6 +11,7 @@ const DrumPads: React.FC = () => {
   const { toast } = useToast();
   const [volume, setVolume] = useState(80);
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
   
   const {
     currentPads,
@@ -22,15 +23,28 @@ const DrumPads: React.FC = () => {
     setVolume: setDrumVolume
   } = useDrumKit();
 
-  // Initialize the drum kit
+  // Initialize the drum kit with error handling
   useEffect(() => {
-    loadKit(selectedKit as DrumKitType);
+    const initKit = async () => {
+      try {
+        await loadKit(selectedKit as DrumKitType);
+      } catch (error) {
+        console.error("Failed to load initial drum kit:", error);
+        toast({
+          title: "Loading Error",
+          description: "Failed to load drum samples. Check your internet connection.",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    initKit();
   }, []);
 
   // Update volume when slider changes
   useEffect(() => {
     setDrumVolume(volume);
-  }, [volume]);
+  }, [volume, setDrumVolume]);
 
   // Keyboard event handling
   useEffect(() => {
@@ -55,8 +69,34 @@ const DrumPads: React.FC = () => {
     };
   }, [currentPads, isLoaded, playSound]);
 
-  const handleKitChange = (kitId: DrumKitType) => {
-    loadKit(kitId);
+  const handleKitChange = async (kitId: DrumKitType) => {
+    try {
+      setIsRetrying(false);
+      await loadKit(kitId);
+    } catch (error) {
+      console.error("Failed to load drum kit:", error);
+      toast({
+        title: "Loading Error",
+        description: `Failed to load ${kitId} kit. Try again later.`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    try {
+      await Tone.start();
+      await loadKit(selectedKit as DrumKitType);
+      setIsRetrying(false);
+    } catch (error) {
+      setIsRetrying(false);
+      toast({
+        title: "Loading Error",
+        description: "Still unable to load samples. Please check your connection.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -84,7 +124,7 @@ const DrumPads: React.FC = () => {
               variant={selectedKit === kit.id ? "default" : "outline"}
               size="sm"
               onClick={() => handleKitChange(kit.id as DrumKitType)}
-              disabled={!isLoaded && selectedKit !== kit.id}
+              disabled={!isLoaded && selectedKit !== kit.id || isRetrying}
             >
               {kit.name}
             </Button>
@@ -92,28 +132,45 @@ const DrumPads: React.FC = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-4 gap-2">
-        {currentPads.map((pad) => (
-          <button
-            key={pad.id}
-            className={`aspect-square rounded-md flex flex-col items-center justify-center transition-all duration-100 p-2 ${
-              activeKey === pad.key ? 'scale-95 brightness-150' : 'hover:brightness-110'
-            }`}
-            style={{ 
-              backgroundColor: `${pad.color}40`, 
-              borderLeft: `2px solid ${pad.color}80`,
-              borderBottom: `2px solid ${pad.color}80`
-            }}
-            onClick={() => playSound(pad.id)}
-            disabled={!isLoaded}
+      {!isLoaded ? (
+        <div className="flex flex-col items-center justify-center py-6 space-y-3">
+          <div className="text-cyber-purple/70 text-sm">
+            {isRetrying ? 'Retrying...' : 'Failed to load drum samples'}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRetry}
+            disabled={isRetrying}
           >
-            <span className="text-xs font-bold mb-1">{pad.name}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-dark/30">
-              {pad.key.toUpperCase()}
-            </span>
-          </button>
-        ))}
-      </div>
+            <RefreshCw className={`w-4 h-4 mr-1 ${isRetrying ? 'animate-spin' : ''}`} />
+            {isRetrying ? 'Loading...' : 'Retry'}
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 gap-2">
+          {currentPads.map((pad) => (
+            <button
+              key={pad.id}
+              className={`aspect-square rounded-md flex flex-col items-center justify-center transition-all duration-100 p-2 ${
+                activeKey === pad.key ? 'scale-95 brightness-150' : 'hover:brightness-110'
+              }`}
+              style={{ 
+                backgroundColor: `${pad.color}40`, 
+                borderLeft: `2px solid ${pad.color}80`,
+                borderBottom: `2px solid ${pad.color}80`
+              }}
+              onClick={() => playSound(pad.id)}
+              disabled={!isLoaded}
+            >
+              <span className="text-xs font-bold mb-1">{pad.name}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-dark/30">
+                {pad.key.toUpperCase()}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
       
       <div className="mt-4 flex justify-between">
         <Button size="sm" variant="outline">
