@@ -1,15 +1,37 @@
 
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import TimelinePlayhead from './TimelinePlayhead';
+import { usePlayback } from '@/contexts/PlaybackContext';
 
 const TimelineRuler = () => {
-  // Generate tick marks for 2 bars with 4 beats each (total 8 beats)
+  const { timelineRef } = usePlayback();
+  const [rulerWidth, setRulerWidth] = useState(0);
+  const rulerRef = useRef<HTMLDivElement>(null);
+  
+  // Measure ruler width for playhead positioning
+  useEffect(() => {
+    if (rulerRef.current) {
+      const updateWidth = () => {
+        setRulerWidth(rulerRef.current.clientWidth);
+      };
+      
+      // Initial measurement
+      updateWidth();
+      
+      // Update on window resize
+      window.addEventListener('resize', updateWidth);
+      return () => window.removeEventListener('resize', updateWidth);
+    }
+  }, []);
+  
+  // Generate tick marks for 16 bars with 4 beats each
   const generateTicks = () => {
     const ticks = [];
     const numMeasures = 16; // Show 16 measures in the ruler
     const beatsPerMeasure = 4; // 4/4 time signature
     
-    for (let measure = 1; measure <= numMeasures; measure++) {
-      const measureNumber = measure;
+    for (let measure = 0; measure < numMeasures; measure++) {
+      const measureNumber = measure + 1;
       
       // Add major tick for measure start
       ticks.push(
@@ -33,12 +55,13 @@ const TimelineRuler = () => {
   };
   
   return (
-    <div className="relative h-8 border-b border-cyber-purple/30 bg-cyber-dark flex items-end overflow-hidden">
-      <div className="absolute inset-0 flex items-end px-1">
-        {/* Transport position indicator (playhead) */}
-        <div className="absolute top-0 bottom-0 left-0 w-px bg-cyber-red z-10">
-          <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-cyber-red"></div>
-        </div>
+    <div 
+      ref={timelineRef} 
+      className="relative h-8 border-b border-cyber-purple/30 bg-cyber-dark flex items-end overflow-hidden"
+    >
+      <div ref={rulerRef} className="absolute inset-0 flex items-end px-1">
+        {/* Playhead */}
+        <TimelinePlayhead rulerWidth={rulerWidth} />
         
         {/* Ruler ticks */}
         <div className="flex-1 flex justify-between items-end pb-1">

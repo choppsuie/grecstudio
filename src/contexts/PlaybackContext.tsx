@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 import { useToast } from '@/hooks/use-toast';
 
@@ -8,6 +8,7 @@ interface PlaybackContextType {
   toneInitialized: boolean;
   bpm: number;
   timelineRef: React.RefObject<HTMLDivElement>;
+  currentTime: number;
   
   // Methods
   setIsPlaying: (value: boolean) => void;
@@ -19,6 +20,7 @@ interface PlaybackContextType {
   handleBpmChange: (newBpm: number) => void;
   handleMIDINoteOn: (note: number, velocity: number) => void;
   handleMIDINoteOff: (note: number) => void;
+  seekToPosition: (position: number) => void;
 }
 
 // Export the context so it can be imported in other files
@@ -42,7 +44,29 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
   const [isPlaying, setIsPlaying] = useState(false);
   const [toneInitialized, setToneInitialized] = useState(false);
   const [bpm, setBpm] = useState(120);
-  const timelineRef = React.useRef<HTMLDivElement>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const timerId = useRef<number | null>(null);
+
+  // Update current time display while playing
+  useEffect(() => {
+    if (isPlaying) {
+      const updateTime = () => {
+        setCurrentTime(Tone.Transport.seconds);
+      };
+      
+      timerId.current = window.setInterval(updateTime, 100);
+    } else if (timerId.current !== null) {
+      window.clearInterval(timerId.current);
+      timerId.current = null;
+    }
+    
+    return () => {
+      if (timerId.current !== null) {
+        window.clearInterval(timerId.current);
+      }
+    };
+  }, [isPlaying]);
 
   const initializeTone = async () => {
     if (!toneInitialized) {
@@ -67,12 +91,20 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
   const handleStop = () => {
     setIsPlaying(false);
     Tone.Transport.stop();
+    setCurrentTime(0);
   };
   
   const handleBpmChange = (newBpm: number) => {
     setBpm(newBpm);
     if (toneInitialized) {
       Tone.Transport.bpm.value = newBpm;
+    }
+  };
+  
+  const seekToPosition = (position: number) => {
+    if (toneInitialized) {
+      Tone.Transport.seconds = position;
+      setCurrentTime(position);
     }
   };
   
@@ -89,6 +121,7 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
     toneInitialized,
     bpm,
     timelineRef,
+    currentTime,
     
     setIsPlaying,
     setBpm,
@@ -99,6 +132,7 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
     handleBpmChange,
     handleMIDINoteOn,
     handleMIDINoteOff,
+    seekToPosition,
   };
 
   return <PlaybackContext.Provider value={value}>{children}</PlaybackContext.Provider>;
