@@ -21,7 +21,8 @@ interface PlaybackContextType {
   handleMIDINoteOff: (note: number) => void;
 }
 
-const PlaybackContext = createContext<PlaybackContextType | undefined>(undefined);
+// Export the context so it can be imported in other files
+export const PlaybackContext = createContext<PlaybackContextType | undefined>(undefined);
 
 export const usePlayback = () => {
   const context = useContext(PlaybackContext);

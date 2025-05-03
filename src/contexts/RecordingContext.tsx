@@ -22,7 +22,7 @@ type RecordingContextType = {
   isRecording: boolean;
   setIsRecording: (value: boolean) => void;
   handleRecord: () => void;
-  handleRecordingComplete: (trackId: string) => void;
+  handleRecordingComplete: (blob: Blob, duration: number) => void; // Fixed parameter type
 };
 
 // Create context
@@ -102,9 +102,15 @@ export const RecordingProvider: React.FC<{children: ReactNode}> = ({ children })
     setIsRecording(!state.isRecording);
   };
   
-  const handleRecordingComplete = (trackId: string) => {
+  // Update to handle Blob and duration instead of trackId
+  const handleRecordingComplete = (blob: Blob, duration: number) => {
+    // Create a unique trackId from the blob
+    const trackId = `track_${Date.now()}`;
     addRecordedTrack(trackId);
     setIsRecording(false);
+    
+    // Here you would typically process the blob and duration
+    console.log(`Recording completed: ${duration}s`);
   };
   
   return (

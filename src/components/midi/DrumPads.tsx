@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { Volume2, Settings, Music, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useDrumKit } from "@/hooks/useDrumKit";
+import { DrumKitType } from "@/hooks/drum-machine/types";
 
 const DrumPads: React.FC = () => {
   const { toast } = useToast();
@@ -72,7 +73,8 @@ const DrumPads: React.FC = () => {
   const handleKitChange = async (kitId: string) => {
     try {
       setIsRetrying(false);
-      await loadKit(kitId);
+      // Fix: Cast the kitId to DrumKitType
+      await loadKit(kitId as DrumKitType);
     } catch (error) {
       console.error("Failed to load drum kit:", error);
       toast({
