@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import * as Tone from "tone";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Volume2, Settings, Music, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useDrumKit, DrumKitType } from "@/hooks/useDrumKit";
+import { useDrumKit } from "@/hooks/useDrumKit";
 
 const DrumPads: React.FC = () => {
   const { toast } = useToast();
@@ -13,6 +12,7 @@ const DrumPads: React.FC = () => {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   
+  // Use our refactored hook
   const {
     currentPads,
     selectedKit,
@@ -27,7 +27,7 @@ const DrumPads: React.FC = () => {
   useEffect(() => {
     const initKit = async () => {
       try {
-        await loadKit(selectedKit as DrumKitType);
+        await loadKit(selectedKit);
       } catch (error) {
         console.error("Failed to load initial drum kit:", error);
         toast({
@@ -69,7 +69,7 @@ const DrumPads: React.FC = () => {
     };
   }, [currentPads, isLoaded, playSound]);
 
-  const handleKitChange = async (kitId: DrumKitType) => {
+  const handleKitChange = async (kitId: string) => {
     try {
       setIsRetrying(false);
       await loadKit(kitId);
@@ -87,7 +87,7 @@ const DrumPads: React.FC = () => {
     setIsRetrying(true);
     try {
       await Tone.start();
-      await loadKit(selectedKit as DrumKitType);
+      await loadKit(selectedKit);
       setIsRetrying(false);
     } catch (error) {
       setIsRetrying(false);
@@ -123,7 +123,7 @@ const DrumPads: React.FC = () => {
               key={kit.id}
               variant={selectedKit === kit.id ? "default" : "outline"}
               size="sm"
-              onClick={() => handleKitChange(kit.id as DrumKitType)}
+              onClick={() => handleKitChange(kit.id)}
               disabled={!isLoaded && selectedKit !== kit.id || isRetrying}
             >
               {kit.name}

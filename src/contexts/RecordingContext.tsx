@@ -1,88 +1,89 @@
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
-import * as Tone from 'tone';
-import { useToast } from '@/hooks/use-toast';
-import { usePlayback } from './PlaybackContext';
-import { useTrackManager } from '@/hooks/useTrackManager';
+import React, { createContext, useReducer, ReactNode } from 'react';
+import { usePlayback } from './StudioHooks';
 
-interface RecordingContextType {
+// Define types
+type RecordingState = {
   isRecording: boolean;
-  setIsRecording: (value: boolean) => void;
-  handleRecord: () => Promise<void>;
-  handleRecordingComplete: (blob: Blob, duration: number) => void;
-}
+  recordedTracks: string[];
+  projectId: string | null;
+};
 
+type RecordingAction = 
+  | { type: 'START_RECORDING'; payload: { projectId: string } }
+  | { type: 'STOP_RECORDING' }
+  | { type: 'ADD_RECORDED_TRACK'; payload: { trackId: string } };
+
+type RecordingContextType = {
+  state: RecordingState;
+  startRecording: (projectId: string) => void;
+  stopRecording: () => void;
+  addRecordedTrack: (trackId: string) => void;
+};
+
+// Create context
 const RecordingContext = createContext<RecordingContextType | undefined>(undefined);
 
-export const useRecording = () => {
-  const context = useContext(RecordingContext);
-  if (!context) {
-    throw new Error('useRecording must be used within a RecordingProvider');
-  }
-  return context;
+// Initial state
+const initialState: RecordingState = {
+  isRecording: false,
+  recordedTracks: [],
+  projectId: null
 };
 
-interface RecordingProviderProps {
-  children: ReactNode;
+// Reducer function
+function recordingReducer(state: RecordingState, action: RecordingAction): RecordingState {
+  switch (action.type) {
+    case 'START_RECORDING':
+      return {
+        ...state,
+        isRecording: true,
+        projectId: action.payload.projectId
+      };
+    case 'STOP_RECORDING':
+      return {
+        ...state,
+        isRecording: false
+      };
+    case 'ADD_RECORDED_TRACK':
+      return {
+        ...state,
+        recordedTracks: [...state.recordedTracks, action.payload.trackId]
+      };
+    default:
+      return state;
+  }
 }
 
-export const RecordingProvider: React.FC<RecordingProviderProps> = ({ children }) => {
-  const { toast } = useToast();
-  const { initializeTone, isPlaying, handlePlay, handlePause } = usePlayback();
-  const { addTrack } = useTrackManager();
+// Provider component
+export const RecordingProvider: React.FC<{children: ReactNode}> = ({ children }) => {
+  const [state, dispatch] = useReducer(recordingReducer, initialState);
+  const { pausePlayback } = usePlayback();
   
-  const [isRecording, setIsRecording] = useState(false);
-  
-  const handleRecord = async () => {
-    await initializeTone();
-    
-    if (isRecording) {
-      // Stop recording
-      setIsRecording(false);
-      if (isPlaying) {
-        handlePause();
-      }
-      toast({
-        title: "Recording stopped",
-        description: "Your recording has been saved.",
-      });
-    } else {
-      // Start recording
-      setIsRecording(true);
-      if (!isPlaying) {
-        handlePlay();
-      }
-      toast({
-        title: "Recording started",
-        description: "Recording in progress...",
-        variant: "destructive"
-      });
-    }
+  const startRecording = (projectId: string) => {
+    dispatch({ type: 'START_RECORDING', payload: { projectId } });
   };
   
-  const handleRecordingComplete = (blob: Blob, duration: number) => {
-    console.log(`Recording complete: ${duration.toFixed(1)}s`);
-    setIsRecording(false);
-    
-    // Add a new track with the recording
-    addTrack({
-      name: `Recording ${new Date().toLocaleTimeString()}`,
-      type: 'audio',
-      color: '#F9636F',
-    });
-    
-    toast({
-      title: "Recording complete",
-      description: `${duration.toFixed(1)}s audio saved to new track.`,
-    });
+  const stopRecording = () => {
+    // Fixed the error: remove the argument from pausePlayback
+    pausePlayback();
+    dispatch({ type: 'STOP_RECORDING' });
   };
-
-  const value: RecordingContextType = {
-    isRecording,
-    setIsRecording,
-    handleRecord,
-    handleRecordingComplete,
+  
+  const addRecordedTrack = (trackId: string) => {
+    dispatch({ type: 'ADD_RECORDED_TRACK', payload: { trackId } });
   };
-
-  return <RecordingContext.Provider value={value}>{children}</RecordingContext.Provider>;
+  
+  return (
+    <RecordingContext.Provider value={{ 
+      state,
+      startRecording, 
+      stopRecording,
+      addRecordedTrack
+    }}>
+      {children}
+    </RecordingContext.Provider>
+  );
 };
+
+export default RecordingContext;

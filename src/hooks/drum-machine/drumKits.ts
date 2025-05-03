@@ -1,23 +1,5 @@
 
-import { useState, useMemo } from "react";
-import * as Tone from "tone";
-import { useToast } from '@/hooks/use-toast';
-
-export type DrumKitType = "basic" | "tr808" | "tr909" | "acoustic";
-
-export interface DrumPad {
-  id: string;
-  name: string;
-  soundUrl: string;
-  color: string;
-  key: string;
-}
-
-interface DrumKit {
-  id: DrumKitType;
-  name: string;
-  pads: DrumPad[];
-}
+import { DrumKit, DrumKitType } from './types';
 
 // Define sound libraries for different drum kits
 const drumKits: Record<DrumKitType, DrumKit> = {
@@ -95,106 +77,14 @@ const drumKits: Record<DrumKitType, DrumKit> = {
   }
 };
 
-export function useDrumKit() {
-  const [selectedKit, setSelectedKit] = useState<DrumKitType>("basic");
-  const [players, setPlayers] = useState<Record<string, Tone.Player>>({});
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [mainVolume, setMainVolume] = useState<Tone.Volume | null>(null);
-  const { toast } = useToast();
+export default drumKits;
 
-  // The current set of drum pads based on selected kit
-  const currentPads = useMemo(() => drumKits[selectedKit].pads, [selectedKit]);
-  
-  // List of available kits
-  const availableKits = useMemo(() => 
-    Object.values(drumKits).map(kit => ({ id: kit.id, name: kit.name })), 
-    []
-  );
+// Helper function to get available kits
+export const getAvailableKits = () => {
+  return Object.values(drumKits).map(kit => ({ id: kit.id, name: kit.name }));
+};
 
-  // Load samples for the selected kit
-  const loadKit = async (kitId: DrumKitType) => {
-    setIsLoaded(false);
-    
-    // Dispose old players
-    Object.values(players).forEach(player => {
-      player.dispose();
-    });
-    
-    // Create volume control if it doesn't exist
-    let volume = mainVolume;
-    if (!volume) {
-      volume = new Tone.Volume(-10).toDestination();
-      setMainVolume(volume);
-    }
-    
-    // Create new players
-    const newPlayers: Record<string, Tone.Player> = {};
-    const selectedDrumKit = drumKits[kitId];
-    
-    try {
-      await Tone.start();
-      
-      // Create a player for each pad
-      for (const pad of selectedDrumKit.pads) {
-        const player = new Tone.Player({
-          url: pad.soundUrl,
-          onload: () => {
-            console.log(`Loaded ${pad.name} for ${kitId} kit`);
-          }
-        }).connect(volume);
-        
-        newPlayers[pad.id] = player;
-      }
-      
-      // Wait for all samples to load
-      await Tone.loaded();
-      
-      setPlayers(newPlayers);
-      setSelectedKit(kitId);
-      setIsLoaded(true);
-      
-      toast({
-        title: "Drum Kit Loaded",
-        description: `${selectedDrumKit.name} is ready to play`
-      });
-    } catch (error) {
-      console.error("Error loading drum kit:", error);
-      toast({
-        title: "Loading Error",
-        description: "Failed to load drum samples",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Play a sound by pad ID
-  const playSound = (id: string) => {
-    if (!players[id] || !isLoaded) return;
-    
-    // Stop if already playing
-    if (players[id].state === "started") {
-      players[id].stop();
-    }
-    
-    // Play from beginning
-    players[id].start();
-  };
-
-  // Update volume level
-  const setVolume = (value: number) => {
-    if (mainVolume) {
-      const dbValue = ((value / 100) * 30) - 30; // Convert to dB scale
-      mainVolume.volume.value = dbValue;
-    }
-  };
-
-  return {
-    currentPads,
-    selectedKit,
-    availableKits,
-    isLoaded,
-    loadKit,
-    playSound,
-    setVolume
-  };
-}
+// Helper function to get a specific kit
+export const getKit = (kitId: DrumKitType) => {
+  return drumKits[kitId];
+};
