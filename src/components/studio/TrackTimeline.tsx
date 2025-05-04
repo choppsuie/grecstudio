@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import AudioVisualizer from "@/components/AudioVisualizer";
 import TimelineRuler from './TimelineRuler';
+import TimelinePlayhead from './TimelinePlayhead';
 import AudioClip, { AudioClipProps } from './AudioClip';
 import { usePlayback } from '@/contexts/PlaybackContext';
 import * as Tone from 'tone';

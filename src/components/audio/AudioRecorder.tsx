@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Mic, Square, Settings } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
+import * as Tone from 'tone';
 import {
   setupAudioRecording,
   calculateAudioLevel,
