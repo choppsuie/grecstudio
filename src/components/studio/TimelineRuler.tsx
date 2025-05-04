@@ -1,6 +1,5 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import TimelinePlayhead from './TimelinePlayhead';
 import { usePlayback } from '@/contexts/PlaybackContext';
 
 const TimelineRuler = () => {
@@ -12,7 +11,9 @@ const TimelineRuler = () => {
   useEffect(() => {
     if (rulerRef.current) {
       const updateWidth = () => {
-        setRulerWidth(rulerRef.current.clientWidth);
+        if (rulerRef.current) {
+          setRulerWidth(rulerRef.current.clientWidth);
+        }
       };
       
       // Initial measurement
@@ -56,12 +57,10 @@ const TimelineRuler = () => {
   
   return (
     <div 
-      ref={timelineRef} 
       className="relative h-8 border-b border-cyber-purple/30 bg-cyber-dark flex items-end overflow-hidden"
     >
       <div ref={rulerRef} className="absolute inset-0 flex items-end px-1">
-        {/* Playhead */}
-        <TimelinePlayhead rulerWidth={rulerWidth} />
+        {/* Playhead will be rendered by parent */}
         
         {/* Ruler ticks */}
         <div className="flex-1 flex justify-between items-end pb-1">

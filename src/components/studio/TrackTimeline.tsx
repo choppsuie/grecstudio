@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import AudioVisualizer from "@/components/AudioVisualizer";
 import TimelineRuler from './TimelineRuler';
 import AudioClip, { AudioClipProps } from './AudioClip';
-import TimelinePlayhead from './TimelinePlayhead';
 import { usePlayback } from '@/contexts/PlaybackContext';
 import * as Tone from 'tone';
 
@@ -120,7 +119,7 @@ const TrackTimeline = ({ tracks, isPlaying }: TrackTimelineProps) => {
   return (
     <div ref={containerRef} className="flex-1 flex flex-col overflow-hidden">
       <div className="relative">
-        <TimelineRuler width={rulerWidth} />
+        <TimelineRuler />
         <TimelinePlayhead rulerWidth={rulerWidth} />
       </div>
       

@@ -4,7 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Mic, Square, Settings } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import * as Tone from "tone";
+import {
+  setupAudioRecording,
+  calculateAudioLevel,
+  formatRecordingTime,
+  disposeAudioResources
+} from "@/utils/audioRecordingUtils";
 
 interface AudioRecorderProps {
   projectId: string;
@@ -19,105 +24,73 @@ const AudioRecorder = ({ projectId, onRecordingComplete }: AudioRecorderProps) =
   const [inputGain, setInputGain] = useState(75);
   const [showSettings, setShowSettings] = useState(false);
   
-  const micRef = useRef<Tone.UserMedia | null>(null);
-  const recorderRef = useRef<Tone.Recorder | null>(null);
-  const analyserRef = useRef<Tone.Analyser | null>(null);
-  const meterRef = useRef<Tone.Meter | null>(null);
+  // Refs for audio components
+  const audioResources = useRef<{
+    mic?: Tone.UserMedia;
+    meter?: Tone.Meter;
+    analyser?: Tone.Analyser;
+    recorder?: Tone.Recorder;
+    gain?: Tone.Gain;
+  }>({});
+  
   const intervalRef = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
   
-  // Initialize Tone.js components
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Cleanup on unmount
       if (intervalRef.current) window.clearInterval(intervalRef.current);
       if (timerRef.current) window.clearInterval(timerRef.current);
-      
-      if (micRef.current) micRef.current.close();
-      if (meterRef.current) meterRef.current.dispose();
-      if (analyserRef.current) analyserRef.current.dispose();
-      if (recorderRef.current) recorderRef.current.dispose();
+      disposeAudioResources(audioResources.current);
     };
   }, []);
   
-  const setupAudioChain = async () => {
-    try {
-      // Initialize Tone context if needed
-      await Tone.start();
-      
-      // Create microphone source
-      const mic = new Tone.UserMedia();
-      await mic.open();
-      micRef.current = mic;
-      
-      // Create gain node
-      const gain = new Tone.Gain(inputGain / 100).toDestination();
-      
-      // Create meter for level monitoring
-      const meter = new Tone.Meter();
-      meterRef.current = meter;
-      
-      // Create analyzer for waveform
-      const analyser = new Tone.Analyser("waveform", 256);
-      analyserRef.current = analyser;
-      
-      // Create recorder
-      const recorder = new Tone.Recorder();
-      recorderRef.current = recorder;
-      
-      // Connect the audio chain
-      mic.connect(gain);
-      mic.connect(meter);
-      mic.connect(analyser);
-      mic.connect(recorder);
-      
-      // Start level monitoring
-      startLevelMonitoring();
-      
-      return true;
-    } catch (error) {
-      console.error("Failed to set up audio recording:", error);
-      toast({
-        title: "Microphone Access Error",
-        description: "Please ensure you've granted microphone permissions.",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
-  
   const startLevelMonitoring = () => {
-    if (meterRef.current) {
+    if (audioResources.current.meter) {
       intervalRef.current = window.setInterval(() => {
-        const level = meterRef.current?.getValue() as number;
-        // Convert dB to a 0-100 scale (approximately)
-        const normalizedLevel = Math.max(0, Math.min(100, (level + 85) * 1.5));
-        setAudioLevel(normalizedLevel);
+        const level = audioResources.current.meter?.getValue() as number;
+        setAudioLevel(calculateAudioLevel(level));
       }, 100);
     }
   };
   
   const startRecording = async () => {
-    const setupSuccess = await setupAudioChain();
-    
-    if (!setupSuccess) return;
-    
-    setIsRecording(true);
-    setRecordingTime(0);
-    
-    if (recorderRef.current) {
-      recorderRef.current.start();
+    try {
+      const resources = await setupAudioRecording();
+      audioResources.current = resources;
       
-      // Start a timer to track recording duration
-      const startTime = Date.now();
-      timerRef.current = window.setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        setRecordingTime(elapsed);
-      }, 1000);
+      // Apply current gain setting
+      if (resources.gain) {
+        resources.gain.gain.value = inputGain / 100;
+      }
       
+      setIsRecording(true);
+      setRecordingTime(0);
+      
+      if (resources.recorder) {
+        resources.recorder.start();
+        
+        // Start level monitoring
+        startLevelMonitoring();
+        
+        // Start recording timer
+        const startTime = Date.now();
+        timerRef.current = window.setInterval(() => {
+          const elapsed = Math.floor((Date.now() - startTime) / 1000);
+          setRecordingTime(elapsed);
+        }, 1000);
+        
+        toast({
+          title: "Recording Started",
+          description: "Your audio is now being recorded"
+        });
+      }
+    } catch (error) {
+      console.error("Failed to start recording:", error);
       toast({
-        title: "Recording Started",
-        description: "Your audio is now being recorded"
+        title: "Microphone Access Error",
+        description: "Please ensure you've granted microphone permissions.",
+        variant: "destructive"
       });
     }
   };
@@ -137,52 +110,36 @@ const AudioRecorder = ({ projectId, onRecordingComplete }: AudioRecorderProps) =
     }
     
     // Stop the recorder and get the audio data
-    if (recorderRef.current) {
-      const recording = await recorderRef.current.stop();
-      
-      // Format the recording as WAV
-      const duration = recordingTime;
-      
-      // Notify about completion
-      if (onRecordingComplete) {
-        onRecordingComplete(recording, duration);
+    try {
+      if (audioResources.current.recorder) {
+        const recording = await audioResources.current.recorder.stop();
+        const duration = recordingTime;
+        
+        // Notify about completion
+        if (onRecordingComplete) {
+          onRecordingComplete(recording, duration);
+        }
+        
+        toast({
+          title: "Recording Complete",
+          description: `Recorded ${formatRecordingTime(recordingTime)} of audio`
+        });
       }
-      
+    } catch (error) {
+      console.error("Error stopping recording:", error);
       toast({
-        title: "Recording Complete",
-        description: `Recorded ${formatTime(recordingTime)} of audio`
+        title: "Recording Error",
+        description: "Failed to save the recording.",
+        variant: "destructive"
       });
+    } finally {
+      // Cleanup audio resources
+      disposeAudioResources(audioResources.current);
+      audioResources.current = {};
+      
+      setIsRecording(false);
+      setAudioLevel(0);
     }
-    
-    // Cleanup audio resources
-    if (micRef.current) {
-      micRef.current.close();
-      micRef.current = null;
-    }
-    
-    if (meterRef.current) {
-      meterRef.current.dispose();
-      meterRef.current = null;
-    }
-    
-    if (analyserRef.current) {
-      analyserRef.current.dispose();
-      analyserRef.current = null;
-    }
-    
-    if (recorderRef.current) {
-      recorderRef.current.dispose();
-      recorderRef.current = null;
-    }
-    
-    setIsRecording(false);
-    setAudioLevel(0);
-  };
-  
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
   
   const handleGainChange = (value: number[]) => {
@@ -190,9 +147,8 @@ const AudioRecorder = ({ projectId, onRecordingComplete }: AudioRecorderProps) =
     setInputGain(newGain);
     
     // Update the gain node if recording is in progress
-    if (micRef.current && isRecording) {
-      const gainNode = new Tone.Gain(newGain / 100);
-      micRef.current.connect(gainNode);
+    if (audioResources.current.gain) {
+      audioResources.current.gain.gain.value = newGain / 100;
     }
   };
   
@@ -236,7 +192,7 @@ const AudioRecorder = ({ projectId, onRecordingComplete }: AudioRecorderProps) =
         </div>
         
         <div className="text-sm font-mono">
-          {isRecording ? formatTime(recordingTime) : "0:00"}
+          {isRecording ? formatRecordingTime(recordingTime) : "0:00"}
         </div>
       </div>
       

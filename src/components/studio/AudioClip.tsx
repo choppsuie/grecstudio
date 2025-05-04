@@ -77,7 +77,7 @@ const AudioClip = ({
     if (!isDragging || !onMove) return;
     
     // Get parent element (track) dimensions
-    const trackElement = (e.currentTarget as HTMLElement).closest('.track-timeline') as HTMLElement;
+    const trackElement = (e.currentTarget as HTMLElement)?.closest('.track-timeline') as HTMLElement;
     if (!trackElement) return;
     
     const trackRect = trackElement.getBoundingClientRect();
@@ -99,7 +99,7 @@ const AudioClip = ({
     if (!isResizingLeft || !onResize) return;
     
     // Get parent dimensions and calculate new start
-    const trackElement = (e.currentTarget as HTMLElement).closest('.track-timeline') as HTMLElement;
+    const trackElement = (e.target as HTMLElement)?.closest('.track-timeline') as HTMLElement;
     if (!trackElement) return;
     
     const trackRect = trackElement.getBoundingClientRect();
@@ -121,10 +121,10 @@ const AudioClip = ({
     if (!isResizingRight || !onResize) return;
     
     // Calculate new right edge position
-    const trackElement = (e.currentTarget as HTMLElement).closest('.track-timeline') as HTMLElement;
+    const trackElement = (e.target as HTMLElement)?.closest('.track-timeline') as HTMLElement;
     if (!trackElement) return;
     
-    const trackRect = trackRect.getBoundingClientRect();
+    const trackRect = trackElement.getBoundingClientRect();
     const newRightPixels = e.clientX - trackRect.left;
     const newRightPercent = Math.min(1, Math.max(0, newRightPixels / trackRect.width));
     
