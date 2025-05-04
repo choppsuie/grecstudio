@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import * as Tone from "tone";
 import { DrumKit, DrumKitType, DrumKitInfo, DrumMachineState } from "./drum-machine/types";
 import { initializeAudio, createVolumeControl, loadKitSamples, percentToDb, disposePlayers } from "./drum-machine/audioUtils";
-import { getAvailableKits, getKit } from "./drum-machine/drumKits";
+import drumKits, { getAvailableKits, getKit } from "./drum-machine/drumKits";
 
 export const useDrumKit = () => {
   const [state, setState] = useState<DrumMachineState>({
@@ -29,6 +29,14 @@ export const useDrumKit = () => {
         }));
 
         setAvailableKits(getAvailableKits());
+        
+        // Load default kit
+        try {
+          const kit = getKit('basic');
+          setCurrentKit(kit);
+        } catch (error) {
+          console.error("Failed to load default kit metadata:", error);
+        }
       } catch (error) {
         console.error("Failed to initialize drum machine:", error);
       }
@@ -52,7 +60,7 @@ export const useDrumKit = () => {
   const loadKit = useCallback(async (kitId: DrumKitType) => {
     if (!state.mainVolume) {
       console.error("Volume node not initialized");
-      return;
+      return false;
     }
     
     try {
@@ -66,11 +74,12 @@ export const useDrumKit = () => {
         isLoaded: false
       }));
 
+      // Get kit data
+      const kit = getKit(kitId);
+      setCurrentKit(kit);
+
       // Load new samples
       const players = await loadKitSamples(kitId, state.mainVolume);
-      const kit = getKit(kitId);
-
-      setCurrentKit(kit);
       
       setState(prevState => ({
         ...prevState,
@@ -87,19 +96,23 @@ export const useDrumKit = () => {
         ...prevState,
         isLoaded: false
       }));
-      throw error;
+      return false;
     }
   }, [state.mainVolume, state.players]);
 
   // Play a drum sound
   const playSound = useCallback((padId: string) => {
     if (!state.isLoaded || !state.players[padId]) {
-      console.warn(`Cannot play ${padId}: samples not loaded`);
+      console.warn(`Cannot play ${padId}: samples not loaded or player not found`);
       return;
     }
     
     try {
       const player = state.players[padId];
+      // Restart the player if it's already playing
+      if (player.state === "started") {
+        player.stop();
+      }
       player.start();
     } catch (error) {
       console.error(`Failed to play ${padId}:`, error);

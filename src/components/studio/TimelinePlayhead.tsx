@@ -8,17 +8,16 @@ interface TimelinePlayheadProps {
 }
 
 const TimelinePlayhead = ({ rulerWidth }: TimelinePlayheadProps) => {
-  const { isPlaying, timelineRef } = usePlayback();
+  const { isPlaying, currentTime } = usePlayback();
   const playheadRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>(null);
+  const animationRef = useRef<number | null>(null);
   
   // Calculate playhead position based on current time
   const updatePlayheadPosition = () => {
-    if (!playheadRef.current || !timelineRef?.current) return;
+    if (!playheadRef.current) return;
     
-    const currentTime = Tone.Transport.seconds;
     const totalDuration = 16 * 4 * 60 / Tone.Transport.bpm.value; // 16 bars in seconds
-    const completion = currentTime / totalDuration;
+    const completion = Tone.Transport.seconds / totalDuration;
     
     // Ensure position stays within bounds
     const position = Math.min(Math.max(0, completion * rulerWidth), rulerWidth);
@@ -36,14 +35,26 @@ const TimelinePlayhead = ({ rulerWidth }: TimelinePlayheadProps) => {
       animationRef.current = requestAnimationFrame(updatePlayheadPosition);
     } else if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
     
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
     };
   }, [isPlaying, rulerWidth]);
+  
+  // Update position when currentTime changes (for seeking)
+  useEffect(() => {
+    if (!isPlaying && playheadRef.current) {
+      const totalDuration = 16 * 4 * 60 / Tone.Transport.bpm.value;
+      const completion = currentTime / totalDuration;
+      const position = Math.min(Math.max(0, completion * rulerWidth), rulerWidth);
+      playheadRef.current.style.transform = `translateX(${position}px)`;
+    }
+  }, [currentTime, isPlaying, rulerWidth]);
   
   return (
     <div 
