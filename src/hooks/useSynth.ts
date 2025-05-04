@@ -1,14 +1,23 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as Tone from "tone";
-import { usePatternRecorder } from "./usePatternRecorder";
+import { usePatternRecorderContext } from "@/contexts/PatternRecorderContext";
 
-type SynthType = "basic" | "fm" | "am" | "membrane" | "pluck";
+// Define types for our synths
+export type SynthType = "basic" | "fm" | "am" | "membrane" | "pluck";
+
+// Common type for all our synth instances
+type SynthInstance = {
+  triggerAttack: (note: string | number, time?: Tone.Unit.Time, velocity?: number) => any;
+  triggerRelease: (time?: Tone.Unit.Time) => any;
+  volume: Tone.Volume;
+  dispose: () => any;
+};
 
 export const useSynth = () => {
   const [currentSynth, setCurrentSynth] = useState<SynthType>("basic");
-  const [synth, setSynth] = useState<Tone.Synth | null>(null);
+  const [synth, setSynth] = useState<SynthInstance | null>(null);
   const [initialized, setInitialized] = useState(false);
-  const { isRecording, recordNote, updateNoteDuration } = usePatternRecorder();
+  const { isRecording, recordNote, updateNoteDuration } = usePatternRecorderContext();
   const activeNotesRef = useRef<Set<number>>(new Set());
 
   // Initialize Tone.js and create the synth
@@ -45,7 +54,7 @@ export const useSynth = () => {
       synth.dispose();
     }
 
-    let newSynth: Tone.Synth;
+    let newSynth: SynthInstance;
 
     // Create the appropriate synth type
     switch (type) {
@@ -113,33 +122,22 @@ export const useSynth = () => {
           resonance: 0.7,
         }).toDestination();
         
-        // Wrap PluckSynth in a standard Synth API
-        newSynth = new Tone.Synth({
-          oscillator: { type: "sine" },
-          envelope: {
-            attack: 0.001,
-            decay: 0.1,
-            sustain: 0.3,
-            release: 0.5,
+        // Create a wrapper object that matches our SynthInstance interface
+        newSynth = {
+          triggerAttack: (note, time) => {
+            pluck.triggerAttack(note, time);
+            return newSynth;
           },
-        });
-        
-        // Override the triggerAttack and triggerRelease methods
-        newSynth.triggerAttack = (note, time, velocity) => {
-          pluck.triggerAttack(note, time, velocity);
-          return newSynth;
+          triggerRelease: (time) => {
+            // PluckSynth doesn't have triggerRelease, but we need to include it
+            return newSynth;
+          },
+          volume: pluck.volume,
+          dispose: () => {
+            pluck.dispose();
+            return newSynth;
+          }
         };
-        
-        newSynth.triggerRelease = (time) => {
-          // PluckSynth doesn't have triggerRelease, but we need to include it
-          return newSynth;
-        };
-        
-        newSynth.dispose = () => {
-          pluck.dispose();
-          return newSynth;
-        };
-        
         break;
 
       case "basic":

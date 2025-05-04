@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import * as Tone from "tone";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { 
-  Record, Square, Save, PlayCircle, Trash2, 
-  CheckCircle, XCircle, EditIcon, Volume2 
+  Mic, Square, Save, PlayCircle, Trash2, 
+  CheckCircle, XCircle, Edit, Volume2 
 } from "lucide-react";
-import { usePatternRecorder } from "@/hooks/usePatternRecorder";
+import { usePatternRecorderContext } from "@/contexts/PatternRecorderContext";
 import { useSynth } from "@/hooks/useSynth";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +17,7 @@ const MelodicPatternRecorder = () => {
     isRecording, currentPattern, savedPatterns,
     startRecording, stopRecording, playPattern,
     deletePattern, renamePattern 
-  } = usePatternRecorder();
+  } = usePatternRecorderContext();
   
   const [volume, setVolume] = useState(75);
   const { currentSynth, synth, changeSynthType } = useSynth();
@@ -157,7 +156,7 @@ const MelodicPatternRecorder = () => {
                   className="border-cyber-red text-cyber-red hover:bg-cyber-red/10"
                   onClick={handleStartRecording}
                 >
-                  <Record className="h-4 w-4 mr-1" />
+                  <Mic className="h-4 w-4 mr-1" />
                   Record
                 </Button>
               ) : (
@@ -200,7 +199,7 @@ const MelodicPatternRecorder = () => {
                   className="h-7 px-3 text-xs"
                   onClick={() => startEditing(currentPattern)}
                 >
-                  <EditIcon className="h-3 w-3 mr-1" />
+                  <Edit className="h-3 w-3 mr-1" />
                   Rename
                 </Button>
               </div>
@@ -290,7 +289,7 @@ const MelodicPatternRecorder = () => {
                         className="h-8 w-8"
                         onClick={() => startEditing(pattern)}
                       >
-                        <EditIcon className="h-4 w-4 text-cyber-purple/70" />
+                        <Edit className="h-4 w-4 text-cyber-purple/70" />
                       </Button>
                       <Button 
                         variant="ghost" 

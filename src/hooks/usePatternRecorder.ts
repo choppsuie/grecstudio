@@ -135,18 +135,24 @@ export function usePatternRecorder() {
   }, [isRecording]);
 
   // Play a specific pattern with a synth
-  const playPattern = useCallback((pattern: Pattern, synth: Tone.Synth | null = null) => {
+  const playPattern = useCallback((pattern: Pattern, synth: any = null) => {
     if (!synth) return;
     
     // Schedule all notes in the pattern
     pattern.notes.forEach(note => {
       const freq = Tone.Frequency(note.note, "midi").toFrequency();
-      synth.triggerAttackRelease(
+      synth.triggerAttack(
         freq,
-        note.duration,
         Tone.now() + note.time,
         note.velocity / 127
       );
+      
+      // Schedule note release
+      if (note.duration > 0) {
+        Tone.Transport.scheduleOnce(() => {
+          synth.triggerRelease();
+        }, `+${note.time + note.duration}`);
+      }
     });
     
     toast({

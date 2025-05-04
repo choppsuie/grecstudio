@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Menubar,
@@ -16,7 +15,7 @@ import {
   MenubarRadioItem,
 } from "@/components/ui/menubar";
 import { useToast } from "@/hooks/use-toast";
-import { useSynth } from "@/hooks/useSynth";
+import { useSynth, SynthType } from "@/hooks/useSynth";
 
 const StudioMenubar = () => {
   const { toast } = useToast();
@@ -29,7 +28,7 @@ const StudioMenubar = () => {
     });
   };
 
-  const handleSynthChange = (type: "basic" | "fm" | "am" | "membrane" | "pluck" | "duo" | "metal" | "piano") => {
+  const handleSynthChange = (type: SynthType) => {
     changeSynthType(type);
     toast({
       title: "Synth Changed",
@@ -218,20 +217,11 @@ const StudioMenubar = () => {
                 <MenubarRadioItem value="am" onClick={() => handleSynthChange("am")}>
                   AM Synth
                 </MenubarRadioItem>
-                <MenubarRadioItem value="duo" onClick={() => handleSynthChange("duo")}>
-                  Duo Synth
-                </MenubarRadioItem>
-                <MenubarRadioItem value="metal" onClick={() => handleSynthChange("metal")}>
-                  Metal Synth
-                </MenubarRadioItem>
                 <MenubarRadioItem value="membrane" onClick={() => handleSynthChange("membrane")}>
                   Membrane Synth
                 </MenubarRadioItem>
                 <MenubarRadioItem value="pluck" onClick={() => handleSynthChange("pluck")}>
                   Pluck Synth
-                </MenubarRadioItem>
-                <MenubarRadioItem value="piano" onClick={() => handleSynthChange("piano")}>
-                  Piano Synth
                 </MenubarRadioItem>
               </MenubarRadioGroup>
             </MenubarSubContent>
