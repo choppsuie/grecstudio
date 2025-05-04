@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { usePlayback } from '@/contexts/PlaybackContext';
 import * as Tone from 'tone';
+import { cn } from '@/lib/utils';
 
 interface TimelinePlayheadProps {
   rulerWidth: number;
@@ -59,7 +60,10 @@ const TimelinePlayhead = ({ rulerWidth }: TimelinePlayheadProps) => {
   return (
     <div 
       ref={playheadRef}
-      className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyber-red z-20 pointer-events-none"
+      className={cn(
+        "absolute top-0 bottom-0 left-0 w-0.5 z-20 pointer-events-none",
+        "bg-cyber-red shadow-[0_0_8px_rgba(237,33,58,0.6)]"
+      )}
       style={{ 
         height: '100%',
         transform: 'translateX(0px)',

@@ -6,6 +6,7 @@ import TimelinePlayhead from './TimelinePlayhead';
 import AudioClip, { AudioClipProps } from './AudioClip';
 import { usePlayback } from '@/contexts/PlaybackContext';
 import * as Tone from 'tone';
+import { cn } from "@/lib/utils";
 
 interface Track {
   id: string;
@@ -125,7 +126,10 @@ const TrackTimeline = ({ tracks, isPlaying }: TrackTimelineProps) => {
       </div>
       
       <div 
-        className="flex-1 overflow-y-auto relative"
+        className={cn(
+          "flex-1 overflow-y-auto relative",
+          "timeline-grid"
+        )}
         onClick={handleTimelineClick}
         ref={timelineRef}
       >
@@ -137,6 +141,11 @@ const TrackTimeline = ({ tracks, isPlaying }: TrackTimelineProps) => {
             {/* Track background visualization */}
             <div className="absolute inset-0 opacity-30">
               <AudioVisualizer isPlaying={isPlaying} color={track.color} />
+            </div>
+            
+            {/* Track name label */}
+            <div className="absolute top-0 left-0 bg-cyber-darker/80 px-2 py-0.5 text-xs font-medium rounded-br-md">
+              {track.name}
             </div>
             
             {/* Audio clips */}

@@ -1,10 +1,12 @@
-import React, { useState, useCallback } from "react";
+
+import React, { useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSynth } from "@/hooks/useSynth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Volume2 } from "lucide-react";
 import * as Tone from "tone";
+import { usePatternRecorder } from "@/hooks/usePatternRecorder";
 
 // Define range and white/black key mapping
 const WHITE_KEYS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -53,6 +55,22 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
   const [activeNotes, setActiveNotes] = useState<number[]>([]);
   const [volume, setVolume] = useState<number>(80);
   const { playNote, stopNote, changeSynthType, currentSynth } = useSynth();
+  const { isRecording } = usePatternRecorder();
+
+  // Initialize audio context on component mount
+  useEffect(() => {
+    const initAudio = async () => {
+      if (Tone.context.state !== "running") {
+        try {
+          await Tone.start();
+        } catch (error) {
+          console.error("Failed to initialize audio context:", error);
+        }
+      }
+    };
+    
+    initAudio();
+  }, []);
 
   // Given MIDI number, return if it's a white key
   const isWhite = useCallback((note: number) => {
@@ -86,7 +104,12 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
   const makeHandlers = (note: number) => ({
     onMouseDown: () => handleDown(note),
     onMouseUp:   () => handleUp(note),
-    onMouseLeave: () => handleUp(note),
+    onMouseLeave: (e: React.MouseEvent) => {
+      // Only trigger note off if mouse button is pressed
+      if (e.buttons === 1) {
+        handleUp(note);
+      }
+    },
     onTouchStart: (e: React.TouchEvent) => { e.preventDefault(); handleDown(note); },
     onTouchEnd:   () => handleUp(note),
   });
@@ -141,7 +164,12 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center bg-cyber-darker/70 rounded-lg p-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-cyber-purple/30">
-        <h3 className="text-sm font-medium text-cyber-light-red">Piano Keyboard</h3>
+        <h3 className={cn(
+          "text-sm font-medium",
+          isRecording ? "text-cyber-red animate-pulse" : "text-cyber-light-red"
+        )}>
+          {isRecording ? "Recording Active" : "Piano Keyboard"}
+        </h3>
         
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -172,7 +200,10 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
       </div>
 
       <div
-        className="relative w-fit mx-auto select-none touch-none bg-cyber-darker/40 p-4 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+        className={cn(
+          "relative w-fit mx-auto select-none touch-none bg-cyber-darker/40 p-4 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.15)]",
+          isRecording && "border-2 border-cyber-red"
+        )}
         tabIndex={0}
         aria-label="Piano Keyboard"
         onKeyDown={handleKeyDown}
@@ -254,7 +285,12 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
                   }}
                   onMouseDown={() => handleDown(note)}
                   onMouseUp={() => handleUp(note)}
-                  onMouseLeave={() => handleUp(note)}
+                  onMouseLeave={(e) => {
+                    // Only trigger note off if mouse button is pressed
+                    if (e.buttons === 1) {
+                      handleUp(note);
+                    }
+                  }}
                   onTouchStart={e => { e.preventDefault(); handleDown(note); }}
                   onTouchEnd={() => handleUp(note)}
                   role="button"
@@ -269,6 +305,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
       </div>
       <div className="text-xs text-cyber-purple/60 text-center">
         Use your QWERTY keyboard: A=C4, W=C#4, S=D4, etc.
+        {isRecording && <div className="text-cyber-red mt-1">Recording active! Notes will be captured.</div>}
       </div>
     </div>
   );

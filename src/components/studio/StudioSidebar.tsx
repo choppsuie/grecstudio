@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sliders, Music, Layers } from "lucide-react";
+import { Sliders, Music, Layers, MicIcon } from "lucide-react";
 import PluginsPanel from './PluginsPanel';
 import DrumPads from '../midi/DrumPads';
 import MIDIKeyboardPanel from './MIDIKeyboardPanel';
+import MelodicPatternRecorder from './MelodicPatternRecorder';
 import { useProject } from '@/contexts/StudioHooks';
 
 const StudioSidebar = () => {
@@ -45,6 +46,14 @@ const StudioSidebar = () => {
             <Music className="h-3.5 w-3.5" />
             <span className="text-xs">Keys</span>
           </TabsTrigger>
+
+          <TabsTrigger 
+            value="melody"
+            className="flex items-center gap-1 data-[state=active]:bg-cyber-purple/20"
+          >
+            <MicIcon className="h-3.5 w-3.5" />
+            <span className="text-xs">Recorder</span>
+          </TabsTrigger>
         </TabsList>
         
         <div className="flex-1 p-3 overflow-y-auto">
@@ -58,6 +67,10 @@ const StudioSidebar = () => {
           
           <TabsContent value="keys" className="h-full mt-0">
             <MIDIKeyboardPanel />
+          </TabsContent>
+
+          <TabsContent value="melody" className="h-full mt-0">
+            <MelodicPatternRecorder />
           </TabsContent>
         </div>
       </Tabs>

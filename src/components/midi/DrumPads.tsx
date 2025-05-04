@@ -1,17 +1,37 @@
+
 import React, { useState, useEffect } from "react";
 import * as Tone from "tone";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Volume2, Settings, Music, RefreshCw } from "lucide-react";
+import { Volume2, Settings, Music, RefreshCw, Save, PlayCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useDrumKit } from "@/hooks/useDrumKit";
 import { DrumKitType } from "@/hooks/drum-machine/types";
+import { cn } from "@/lib/utils";
+
+// Define pattern interface for drum sequences
+interface DrumPattern {
+  name: string;
+  beats: number;
+  steps: Record<string, boolean[]>;
+}
+
+const STEPS = 16;
 
 const DrumPads: React.FC = () => {
   const { toast } = useToast();
   const [volume, setVolume] = useState(80);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [showPatternEditor, setShowPatternEditor] = useState(false);
+  const [currentPattern, setCurrentPattern] = useState<DrumPattern>({
+    name: "Pattern 1",
+    beats: 4,
+    steps: {}
+  });
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [sequencerRef, setSequencerRef] = useState<Tone.Sequence | null>(null);
   
   // Use our refactored hook
   const {
@@ -21,25 +41,44 @@ const DrumPads: React.FC = () => {
     isLoaded,
     loadKit,
     playSound,
-    setVolume: setDrumVolume
+    setVolume: setDrumVolume,
+    forceInitialize
   } = useDrumKit();
+
+  // Initialize pattern steps for all pads
+  useEffect(() => {
+    if (currentPads.length > 0 && Object.keys(currentPattern.steps).length === 0) {
+      const initialSteps: Record<string, boolean[]> = {};
+      currentPads.forEach(pad => {
+        initialSteps[pad.id] = Array(STEPS).fill(false);
+      });
+      
+      setCurrentPattern(prev => ({
+        ...prev,
+        steps: initialSteps
+      }));
+    }
+  }, [currentPads, currentPattern.steps]);
 
   // Initialize the drum kit with error handling
   useEffect(() => {
     const initKit = async () => {
       try {
+        await Tone.start();
         await loadKit(selectedKit);
       } catch (error) {
         console.error("Failed to load initial drum kit:", error);
-        toast({
-          title: "Loading Error",
-          description: "Failed to load drum samples. Check your internet connection.",
-          variant: "destructive"
-        });
       }
     };
     
     initKit();
+
+    return () => {
+      if (sequencerRef) {
+        sequencerRef.stop();
+        sequencerRef.dispose();
+      }
+    };
   }, []);
 
   // Update volume when slider changes
@@ -70,6 +109,48 @@ const DrumPads: React.FC = () => {
     };
   }, [currentPads, isLoaded, playSound]);
 
+  // Setup sequencer
+  useEffect(() => {
+    if (isLoaded && isPlaying && !sequencerRef) {
+      const sequence = new Tone.Sequence(
+        (time, step) => {
+          setCurrentStep(step);
+          
+          // Play sounds for this step
+          Object.entries(currentPattern.steps).forEach(([padId, steps]) => {
+            if (steps[step]) {
+              playSound(padId);
+            }
+          });
+        },
+        [...Array(STEPS).keys()],
+        "16n"
+      );
+      
+      sequence.start(0);
+      setSequencerRef(sequence);
+      
+      if (Tone.Transport.state !== "started") {
+        Tone.Transport.start();
+      }
+    } else if (!isPlaying && sequencerRef) {
+      sequencerRef.stop();
+      sequencerRef.dispose();
+      setSequencerRef(null);
+      
+      if (Tone.Transport.state === "started") {
+        Tone.Transport.pause();
+      }
+    }
+    
+    return () => {
+      if (sequencerRef) {
+        sequencerRef.stop();
+        sequencerRef.dispose();
+      }
+    };
+  }, [isLoaded, isPlaying, currentPattern.steps, playSound]);
+
   const handleKitChange = async (kitId: string) => {
     try {
       setIsRetrying(false);
@@ -88,17 +169,90 @@ const DrumPads: React.FC = () => {
   const handleRetry = async () => {
     setIsRetrying(true);
     try {
-      await Tone.start();
-      await loadKit(selectedKit);
+      const success = await forceInitialize();
       setIsRetrying(false);
+      
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Drum kit loaded successfully",
+        });
+      } else {
+        toast({
+          title: "Loading Error",
+          description: "Still unable to load samples. Please check your connection.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       setIsRetrying(false);
       toast({
         title: "Loading Error",
-        description: "Still unable to load samples. Please check your connection.",
+        description: "Failed to initialize audio. Try clicking the retry button again.",
         variant: "destructive"
       });
     }
+  };
+
+  const toggleStep = (padId: string, step: number) => {
+    setCurrentPattern(prev => {
+      const newSteps = { ...prev.steps };
+      if (!newSteps[padId]) {
+        newSteps[padId] = Array(STEPS).fill(false);
+      }
+      newSteps[padId] = [...newSteps[padId]];
+      newSteps[padId][step] = !newSteps[padId][step];
+      return { ...prev, steps: newSteps };
+    });
+  };
+
+  const togglePlay = async () => {
+    if (!isLoaded) {
+      toast({
+        title: "Error",
+        description: "Drum samples not loaded. Please retry loading.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      await Tone.start();
+      setIsPlaying(!isPlaying);
+    } catch (error) {
+      console.error("Failed to start audio context:", error);
+      toast({
+        title: "Audio Error",
+        description: "Failed to start audio playback. Click retry first.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const clearPattern = () => {
+    const emptySteps: Record<string, boolean[]> = {};
+    currentPads.forEach(pad => {
+      emptySteps[pad.id] = Array(STEPS).fill(false);
+    });
+    
+    setCurrentPattern(prev => ({
+      ...prev,
+      steps: emptySteps
+    }));
+    
+    toast({
+      title: "Pattern Cleared",
+      description: "All steps have been cleared from the pattern."
+    });
+  };
+
+  const savePattern = () => {
+    // In a real app, this would save to a database
+    // For now, just show a toast
+    toast({
+      title: "Pattern Saved",
+      description: `${currentPattern.name} has been saved.`
+    });
   };
 
   return (
@@ -146,8 +300,75 @@ const DrumPads: React.FC = () => {
             disabled={isRetrying}
           >
             <RefreshCw className={`w-4 h-4 mr-1 ${isRetrying ? 'animate-spin' : ''}`} />
-            {isRetrying ? 'Loading...' : 'Retry'}
+            {isRetrying ? 'Loading...' : 'Click to Initialize Audio'}
           </Button>
+        </div>
+      ) : showPatternEditor ? (
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="text-sm font-semibold text-cyber-purple/80">Pattern Editor</h4>
+            <div className="flex space-x-2">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={togglePlay} 
+                className={isPlaying ? "bg-cyber-purple/20" : ""}
+              >
+                <PlayCircle className="w-4 h-4 mr-1" />
+                {isPlaying ? "Stop" : "Play"}
+              </Button>
+              <Button size="sm" variant="outline" onClick={clearPattern}>
+                Clear
+              </Button>
+              <Button size="sm" variant="outline" onClick={savePattern}>
+                <Save className="w-4 h-4 mr-1" />
+                Save
+              </Button>
+            </div>
+          </div>
+          
+          <div className="bg-cyber-darker p-2 rounded-md">
+            <div className="grid grid-cols-16 gap-1 mb-1">
+              {[...Array(STEPS)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className={cn(
+                    "text-center text-xs font-mono h-6 flex items-center justify-center",
+                    currentStep === i && isPlaying ? "bg-cyber-purple/30 text-white" : "text-cyber-purple/50"
+                  )}
+                >
+                  {i + 1}
+                </div>
+              ))}
+            </div>
+            
+            {currentPads.map((pad) => (
+              <div key={pad.id} className="flex items-center mb-1">
+                <div 
+                  className="w-12 text-xs truncate mr-1 py-1 px-2"
+                  style={{ color: pad.color }}
+                >
+                  {pad.name}
+                </div>
+                <div className="grid grid-cols-16 gap-1 flex-1">
+                  {(currentPattern.steps[pad.id] || Array(STEPS).fill(false)).map((active, step) => (
+                    <div
+                      key={`${pad.id}-${step}`}
+                      className={cn(
+                        "h-6 rounded cursor-pointer transition-all",
+                        active ? "bg-opacity-80" : "bg-opacity-10",
+                        currentStep === step && isPlaying ? "ring-1 ring-white" : ""
+                      )}
+                      style={{ 
+                        backgroundColor: active ? pad.color : `${pad.color}40`
+                      }}
+                      onClick={() => toggleStep(pad.id, step)}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-4 gap-2">
@@ -179,9 +400,13 @@ const DrumPads: React.FC = () => {
           <Settings className="w-4 h-4 mr-1" />
           Settings
         </Button>
-        <Button size="sm" variant="outline">
+        <Button 
+          size="sm" 
+          variant={showPatternEditor ? "default" : "outline"}
+          onClick={() => setShowPatternEditor(!showPatternEditor)}
+        >
           <Music className="w-4 h-4 mr-1" />
-          Pattern Editor
+          {showPatternEditor ? "Hide Editor" : "Pattern Editor"}
         </Button>
       </div>
     </div>

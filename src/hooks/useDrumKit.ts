@@ -1,11 +1,13 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import * as Tone from "tone";
 import { DrumKit, DrumKitType, DrumKitInfo, DrumMachineState } from "./drum-machine/types";
 import { initializeAudio, createVolumeControl, loadKitSamples, percentToDb, disposePlayers } from "./drum-machine/audioUtils";
 import drumKits, { getAvailableKits, getKit } from "./drum-machine/drumKits";
+import { useToast } from "@/hooks/use-toast";
 
 export const useDrumKit = () => {
+  const { toast } = useToast();
   const [state, setState] = useState<DrumMachineState>({
     selectedKit: 'basic' as DrumKitType,
     players: {},
@@ -15,13 +17,23 @@ export const useDrumKit = () => {
 
   const [currentKit, setCurrentKit] = useState<DrumKit | null>(null);
   const [availableKits, setAvailableKits] = useState<DrumKitInfo[]>([]);
+  const volumeNodeRef = useRef<Tone.Volume | null>(null);
 
   // Initialize the drum machine
   useEffect(() => {
     const initDrumMachine = async () => {
       try {
-        await initializeAudio();
+        const initialized = await initializeAudio();
+        if (!initialized) {
+          toast({
+            title: "Audio Initialization",
+            description: "Click anywhere to enable audio playback",
+          });
+          return;
+        }
+        
         const volumeNode = createVolumeControl(-10);
+        volumeNodeRef.current = volumeNode;
         
         setState(prevState => ({
           ...prevState,
@@ -34,11 +46,22 @@ export const useDrumKit = () => {
         try {
           const kit = getKit('basic');
           setCurrentKit(kit);
+          await loadKit('basic');
         } catch (error) {
           console.error("Failed to load default kit metadata:", error);
+          toast({
+            title: "Loading Error",
+            description: "Failed to load drum kit samples",
+            variant: "destructive"
+          });
         }
       } catch (error) {
         console.error("Failed to initialize drum machine:", error);
+        toast({
+          title: "Initialization Error",
+          description: "Failed to initialize audio engine",
+          variant: "destructive"
+        });
       }
     };
     
@@ -50,15 +73,16 @@ export const useDrumKit = () => {
         disposePlayers(state.players);
       }
       
-      if (state.mainVolume) {
-        state.mainVolume.dispose();
+      if (volumeNodeRef.current) {
+        volumeNodeRef.current.dispose();
       }
     };
-  }, []);
+  }, [toast]);
 
   // Load drum kit samples
   const loadKit = useCallback(async (kitId: DrumKitType) => {
-    if (!state.mainVolume) {
+    const volumeNode = state.mainVolume || volumeNodeRef.current;
+    if (!volumeNode) {
       console.error("Volume node not initialized");
       return false;
     }
@@ -79,13 +103,23 @@ export const useDrumKit = () => {
       setCurrentKit(kit);
 
       // Load new samples
-      const players = await loadKitSamples(kitId, state.mainVolume);
+      const players = await loadKitSamples(kitId, volumeNode);
+      
+      if (Object.keys(players).length === 0) {
+        toast({
+          title: "Loading Warning",
+          description: `Could not load all samples for ${kitId} kit`,
+          variant: "destructive"
+        });
+        return false;
+      }
       
       setState(prevState => ({
         ...prevState,
         selectedKit: kitId,
         players,
-        isLoaded: true
+        isLoaded: true,
+        mainVolume: volumeNode
       }));
       
       console.log(`Loaded ${kitId} kit successfully`);
@@ -96,19 +130,31 @@ export const useDrumKit = () => {
         ...prevState,
         isLoaded: false
       }));
+      
+      toast({
+        title: "Kit Loading Failed",
+        description: `Could not load the ${kitId} drum kit`,
+        variant: "destructive"
+      });
+      
       return false;
     }
-  }, [state.mainVolume, state.players]);
+  }, [state.mainVolume, state.players, toast]);
 
   // Play a drum sound
   const playSound = useCallback((padId: string) => {
-    if (!state.isLoaded || !state.players[padId]) {
-      console.warn(`Cannot play ${padId}: samples not loaded or player not found`);
+    if (!state.isLoaded) {
+      console.warn(`Cannot play ${padId}: samples not loaded`);
+      return;
+    }
+    
+    const player = state.players[padId];
+    if (!player) {
+      console.warn(`Player not found for ${padId}`);
       return;
     }
     
     try {
-      const player = state.players[padId];
       // Restart the player if it's already playing
       if (player.state === "started") {
         player.stop();
@@ -121,11 +167,30 @@ export const useDrumKit = () => {
 
   // Set the volume
   const setVolume = useCallback((volumePercent: number) => {
-    if (!state.mainVolume) return;
+    if (!state.mainVolume && !volumeNodeRef.current) return;
     
-    const dbValue = percentToDb(volumePercent);
-    state.mainVolume.volume.value = dbValue;
+    const volumeNode = state.mainVolume || volumeNodeRef.current;
+    if (volumeNode) {
+      const dbValue = percentToDb(volumePercent);
+      volumeNode.volume.value = dbValue;
+    }
   }, [state.mainVolume]);
+
+  // Force initialization function for UI buttons
+  const forceInitialize = useCallback(async () => {
+    await initializeAudio();
+    if (!state.mainVolume && !volumeNodeRef.current) {
+      const volumeNode = createVolumeControl(-10);
+      volumeNodeRef.current = volumeNode;
+      
+      setState(prevState => ({
+        ...prevState,
+        mainVolume: volumeNode
+      }));
+    }
+    
+    return loadKit(state.selectedKit);
+  }, [loadKit, state.mainVolume, state.selectedKit]);
 
   return {
     currentPads: currentKit?.pads || [],
@@ -134,7 +199,8 @@ export const useDrumKit = () => {
     isLoaded: state.isLoaded,
     loadKit,
     playSound,
-    setVolume
+    setVolume,
+    forceInitialize
   };
 };
 
