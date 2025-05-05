@@ -5,12 +5,12 @@ import { usePatternRecorderContext } from "@/contexts/PatternRecorderContext";
 // Define types for our synths
 export type SynthType = "basic" | "fm" | "am" | "membrane" | "pluck";
 
-// Common type for all our synth instances
+// Common type for all our synth instances - using a more flexible approach
 type SynthInstance = {
   triggerAttack: (note: string | number, time?: Tone.Unit.Time, velocity?: number) => any;
   triggerRelease: (time?: Tone.Unit.Time) => any;
-  volume: Tone.Volume;
   dispose: () => any;
+  set: (params: Record<string, any>) => any;
 };
 
 export const useSynth = () => {
@@ -19,6 +19,7 @@ export const useSynth = () => {
   const [initialized, setInitialized] = useState(false);
   const { isRecording, recordNote, updateNoteDuration } = usePatternRecorderContext();
   const activeNotesRef = useRef<Set<number>>(new Set());
+  const volumeRef = useRef<number>(-10);
 
   // Initialize Tone.js and create the synth
   useEffect(() => {
@@ -54,12 +55,12 @@ export const useSynth = () => {
       synth.dispose();
     }
 
-    let newSynth: SynthInstance;
+    let newSynthInst: SynthInstance;
 
     // Create the appropriate synth type
     switch (type) {
       case "fm":
-        newSynth = new Tone.FMSynth({
+        const fmSynth = new Tone.FMSynth({
           harmonicity: 3,
           modulationIndex: 10,
           oscillator: { type: "sine" },
@@ -77,10 +78,13 @@ export const useSynth = () => {
             release: 0.5,
           },
         }).toDestination();
+        
+        fmSynth.volume.value = volumeRef.current;
+        newSynthInst = fmSynth;
         break;
 
       case "am":
-        newSynth = new Tone.AMSynth({
+        const amSynth = new Tone.AMSynth({
           harmonicity: 2,
           oscillator: { type: "square" },
           envelope: {
@@ -97,10 +101,13 @@ export const useSynth = () => {
             release: 0.5,
           },
         }).toDestination();
+        
+        amSynth.volume.value = volumeRef.current;
+        newSynthInst = amSynth;
         break;
 
       case "membrane":
-        newSynth = new Tone.MembraneSynth({
+        const membraneSynth = new Tone.MembraneSynth({
           pitchDecay: 0.05,
           octaves: 4,
           oscillator: { type: "sine" },
@@ -112,6 +119,9 @@ export const useSynth = () => {
             attackCurve: "exponential",
           },
         }).toDestination();
+        
+        membraneSynth.volume.value = volumeRef.current;
+        newSynthInst = membraneSynth;
         break;
 
       case "pluck":
@@ -122,27 +132,37 @@ export const useSynth = () => {
           resonance: 0.7,
         }).toDestination();
         
+        // Set volume
+        pluck.volume.value = volumeRef.current;
+        
         // Create a wrapper object that matches our SynthInstance interface
-        newSynth = {
+        newSynthInst = {
           triggerAttack: (note, time) => {
             pluck.triggerAttack(note, time);
-            return newSynth;
+            return newSynthInst;
           },
-          triggerRelease: (time) => {
+          triggerRelease: () => {
             // PluckSynth doesn't have triggerRelease, but we need to include it
-            return newSynth;
+            return newSynthInst;
           },
-          volume: pluck.volume,
           dispose: () => {
             pluck.dispose();
-            return newSynth;
+            return newSynthInst;
+          },
+          set: (params) => {
+            // Handle setting params
+            if (params.volume !== undefined) {
+              pluck.volume.value = params.volume;
+              volumeRef.current = params.volume;
+            }
+            return newSynthInst;
           }
         };
         break;
 
       case "basic":
       default:
-        newSynth = new Tone.Synth({
+        const basicSynth = new Tone.Synth({
           oscillator: { type: "triangle8" },
           envelope: {
             attack: 0.01,
@@ -151,21 +171,38 @@ export const useSynth = () => {
             release: 0.8,
           },
         }).toDestination();
+        
+        basicSynth.volume.value = volumeRef.current;
+        newSynthInst = basicSynth;
         break;
     }
 
-    // Set volume to a reasonable level
-    newSynth.volume.value = -10;
-    setSynth(newSynth);
+    setSynth(newSynthInst);
+    setCurrentSynth(type);
     
-    return newSynth;
+    return newSynthInst;
   }, [synth]);
 
   // Change synth type
   const changeSynthType = useCallback((type: SynthType) => {
     createSynth(type);
-    setCurrentSynth(type);
   }, [createSynth]);
+
+  // Set volume
+  const setVolume = useCallback((volume: number) => {
+    if (!synth) return;
+    
+    volumeRef.current = volume;
+    
+    // Different synth types have different ways to set volume
+    if ('volume' in synth && synth.volume && typeof synth.volume === 'object' && 'value' in synth.volume) {
+      // Standard Tone.js synths
+      synth.volume.value = volume;
+    } else {
+      // Our custom wrapper
+      synth.set({ volume });
+    }
+  }, [synth]);
 
   // Play a note
   const playNote = useCallback((midiNote: number, velocity: number = 100) => {
@@ -219,7 +256,8 @@ export const useSynth = () => {
     initialized,
     changeSynthType,
     playNote,
-    stopNote
+    stopNote,
+    setVolume
   };
 };
 

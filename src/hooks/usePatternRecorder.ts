@@ -138,20 +138,28 @@ export function usePatternRecorder() {
   const playPattern = useCallback((pattern: Pattern, synth: any = null) => {
     if (!synth) return;
     
+    // Make sure we have pattern notes
+    if (!pattern.notes || pattern.notes.length === 0) {
+      console.warn("Pattern has no notes to play");
+      return;
+    }
+    
     // Schedule all notes in the pattern
+    const now = Tone.now();
+    
     pattern.notes.forEach(note => {
       const freq = Tone.Frequency(note.note, "midi").toFrequency();
-      synth.triggerAttack(
-        freq,
-        Tone.now() + note.time,
-        note.velocity / 127
-      );
+      const velocity = note.velocity / 127; // Convert MIDI velocity to 0-1 range
       
-      // Schedule note release
+      // Schedule note on
+      synth.triggerAttack(freq, now + note.time, velocity);
+      
+      // If the note has duration, schedule its release
       if (note.duration > 0) {
-        Tone.Transport.scheduleOnce(() => {
-          synth.triggerRelease();
-        }, `+${note.time + note.duration}`);
+        const releaseTime = now + note.time + note.duration;
+        setTimeout(() => {
+          synth.triggerRelease(undefined);
+        }, (note.time + note.duration) * 1000);
       }
     });
     
