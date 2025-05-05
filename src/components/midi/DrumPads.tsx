@@ -64,7 +64,9 @@ const DrumPads: React.FC = () => {
   useEffect(() => {
     const initKit = async () => {
       try {
+        console.log("Initializing drum kit in DrumPads component");
         await Tone.start();
+        console.log("Tone context started:", Tone.context.state);
         await loadKit(selectedKit);
       } catch (error) {
         console.error("Failed to load initial drum kit:", error);
@@ -93,6 +95,7 @@ const DrumPads: React.FC = () => {
       if (pad && isLoaded) {
         playSound(pad.id);
         setActiveKey(pad.key);
+        console.log(`Key pressed: ${e.key}, playing sound: ${pad.id}`);
       }
     };
 
@@ -154,6 +157,7 @@ const DrumPads: React.FC = () => {
   const handleKitChange = async (kitId: string) => {
     try {
       setIsRetrying(false);
+      console.log("Changing kit to:", kitId);
       // Fix: Cast the kitId to DrumKitType
       await loadKit(kitId as DrumKitType);
     } catch (error) {
@@ -169,6 +173,7 @@ const DrumPads: React.FC = () => {
   const handleRetry = async () => {
     setIsRetrying(true);
     try {
+      console.log("Retrying initialization...");
       const success = await forceInitialize();
       setIsRetrying(false);
       
@@ -255,6 +260,11 @@ const DrumPads: React.FC = () => {
     });
   };
 
+  const handlePadClick = (padId: string) => {
+    console.log("Pad clicked:", padId);
+    playSound(padId);
+  };
+
   return (
     <div className="p-2 bg-cyber-dark rounded-md border border-cyber-purple/40">
       <div className="flex justify-between items-center mb-4">
@@ -281,6 +291,7 @@ const DrumPads: React.FC = () => {
               size="sm"
               onClick={() => handleKitChange(kit.id)}
               disabled={!isLoaded && selectedKit !== kit.id || isRetrying}
+              className={selectedKit === kit.id ? "bg-cyber-purple text-white" : "text-cyber-purple"}
             >
               {kit.name}
             </Button>
@@ -290,7 +301,7 @@ const DrumPads: React.FC = () => {
       
       {!isLoaded ? (
         <div className="flex flex-col items-center justify-center py-6 space-y-3">
-          <div className="text-cyber-purple/70 text-sm">
+          <div className="text-cyber-purple text-sm">
             {isRetrying ? 'Retrying...' : 'Failed to load drum samples'}
           </div>
           <Button 
@@ -298,6 +309,7 @@ const DrumPads: React.FC = () => {
             size="sm" 
             onClick={handleRetry}
             disabled={isRetrying}
+            className="text-cyber-purple border-cyber-purple"
           >
             <RefreshCw className={`w-4 h-4 mr-1 ${isRetrying ? 'animate-spin' : ''}`} />
             {isRetrying ? 'Loading...' : 'Click to Initialize Audio'}
@@ -306,21 +318,21 @@ const DrumPads: React.FC = () => {
       ) : showPatternEditor ? (
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
-            <h4 className="text-sm font-semibold text-cyber-purple/80">Pattern Editor</h4>
+            <h4 className="text-sm font-semibold text-cyber-purple">Pattern Editor</h4>
             <div className="flex space-x-2">
               <Button 
                 size="sm" 
                 variant="outline" 
                 onClick={togglePlay} 
-                className={isPlaying ? "bg-cyber-purple/20" : ""}
+                className={isPlaying ? "bg-cyber-purple/20 text-cyber-purple" : "text-cyber-purple"}
               >
                 <PlayCircle className="w-4 h-4 mr-1" />
                 {isPlaying ? "Stop" : "Play"}
               </Button>
-              <Button size="sm" variant="outline" onClick={clearPattern}>
+              <Button size="sm" variant="outline" onClick={clearPattern} className="text-cyber-purple">
                 Clear
               </Button>
-              <Button size="sm" variant="outline" onClick={savePattern}>
+              <Button size="sm" variant="outline" onClick={savePattern} className="text-cyber-purple">
                 <Save className="w-4 h-4 mr-1" />
                 Save
               </Button>
@@ -334,7 +346,7 @@ const DrumPads: React.FC = () => {
                   key={i} 
                   className={cn(
                     "text-center text-xs font-mono h-6 flex items-center justify-center",
-                    currentStep === i && isPlaying ? "bg-cyber-purple/30 text-white" : "text-cyber-purple/50"
+                    currentStep === i && isPlaying ? "bg-cyber-purple/30 text-white" : "text-cyber-purple"
                   )}
                 >
                   {i + 1}
@@ -345,7 +357,7 @@ const DrumPads: React.FC = () => {
             {currentPads.map((pad) => (
               <div key={pad.id} className="flex items-center mb-1">
                 <div 
-                  className="w-12 text-xs truncate mr-1 py-1 px-2"
+                  className="w-12 text-xs truncate mr-1 py-1 px-2 text-white"
                   style={{ color: pad.color }}
                 >
                   {pad.name}
@@ -383,11 +395,11 @@ const DrumPads: React.FC = () => {
                 borderLeft: `2px solid ${pad.color}80`,
                 borderBottom: `2px solid ${pad.color}80`
               }}
-              onClick={() => playSound(pad.id)}
+              onClick={() => handlePadClick(pad.id)}
               disabled={!isLoaded}
             >
-              <span className="text-xs font-bold mb-1">{pad.name}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-dark/30">
+              <span className="text-xs font-bold mb-1 text-white">{pad.name}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-dark/30 text-cyber-purple">
                 {pad.key.toUpperCase()}
               </span>
             </button>
@@ -396,7 +408,7 @@ const DrumPads: React.FC = () => {
       )}
       
       <div className="mt-4 flex justify-between">
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" className="text-cyber-purple">
           <Settings className="w-4 h-4 mr-1" />
           Settings
         </Button>
@@ -404,6 +416,7 @@ const DrumPads: React.FC = () => {
           size="sm" 
           variant={showPatternEditor ? "default" : "outline"}
           onClick={() => setShowPatternEditor(!showPatternEditor)}
+          className={showPatternEditor ? "bg-cyber-purple text-white" : "text-cyber-purple"}
         >
           <Music className="w-4 h-4 mr-1" />
           {showPatternEditor ? "Hide Editor" : "Pattern Editor"}

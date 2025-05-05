@@ -3,17 +3,23 @@ import * as Tone from "tone";
 import { DrumKitType } from "./types";
 import drumKits from "./drumKits";
 
-// Initialize audio context and start Tone.js
+// Initialize audio context and start Tone.js with better error handling
 export const initializeAudio = async () => {
-  if (Tone.context.state !== "running") {
-    await Tone.start();
-    console.log("Tone.js initialized");
+  try {
+    if (Tone.context.state !== "running") {
+      await Tone.start();
+      await Tone.context.resume();
+      console.log("Tone.js initialized with state:", Tone.context.state);
+    }
+    return Tone.context.state === "running";
+  } catch (error) {
+    console.error("Error initializing Tone.js:", error);
+    return false;
   }
-  return Tone.context.state === "running";
 };
 
-// Create a volume control node
-export const createVolumeControl = (initialLevel: number = -10) => {
+// Create a volume control node with better defaults
+export const createVolumeControl = (initialLevel: number = -5) => {
   const volumeNode = new Tone.Volume(initialLevel).toDestination();
   return volumeNode;
 };
@@ -32,17 +38,24 @@ export const loadKitSamples = async (
   }
   
   try {
+    console.log(`Loading kit ${kitId} with ${selectedKit.pads.length} samples`);
+    
     // Create a player for each pad and connect to volume
     for (const pad of selectedKit.pads) {
       try {
+        console.log(`Attempting to load sound: ${pad.name} (${pad.soundUrl})`);
+        
         const player = new Tone.Player({
           url: pad.soundUrl,
           onload: () => {
-            console.log(`Loaded ${pad.name} for ${kitId} kit`);
+            console.log(`Successfully loaded ${pad.name} for ${kitId} kit`);
           },
           onerror: (error) => {
             console.error(`Failed to load ${pad.name}: ${error}`);
-          }
+          },
+          volume: 0, // Neutral volume
+          fadeIn: 0.01, // Small fade in to avoid clicks
+          fadeOut: 0.01 // Small fade out
         }).connect(volumeNode);
         
         players[pad.id] = player;
@@ -51,16 +64,17 @@ export const loadKitSamples = async (
       }
     }
     
-    // Wait for all samples to load with a timeout
+    // Wait for all samples to load with a longer timeout
     const loadPromise = Tone.loaded();
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Loading timed out")), 10000);
+      setTimeout(() => reject(new Error("Loading timed out")), 15000);
     });
     
     await Promise.race([loadPromise, timeoutPromise]).catch(err => {
       console.warn("Some samples may not have loaded properly:", err);
     });
     
+    console.log(`Successfully created ${Object.keys(players).length} players for kit ${kitId}`);
     return players;
   } catch (error) {
     console.error("Failed to load kit samples:", error);
@@ -68,14 +82,19 @@ export const loadKitSamples = async (
   }
 };
 
-// Convert volume percentage to decibels
+// Convert volume percentage to decibels with a better curve
 export const percentToDb = (percent: number) => {
-  // Convert percentage (0-100) to dB scale (-60 to 0)
-  return ((percent / 100) * 60) - 60;
+  // Convert percentage (0-100) to dB scale (-60 to 0) with a more natural curve
+  if (percent <= 0) return -Infinity;
+  if (percent >= 100) return 6; // Allow some boost
+  
+  // Logarithmic scale feels more natural for volume
+  return 40 * Math.log10(percent / 100);
 };
 
 // Dispose of players to clean up memory
 export const disposePlayers = (players: Record<string, Tone.Player>) => {
+  console.log(`Disposing ${Object.keys(players).length} players`);
   Object.values(players).forEach(player => {
     try {
       if (player && typeof player.dispose === 'function') {
