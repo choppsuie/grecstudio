@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import AudioVisualizer from "@/components/AudioVisualizer";
 import TimelineRuler from './TimelineRuler';

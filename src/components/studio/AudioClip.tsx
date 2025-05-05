@@ -1,18 +1,10 @@
 
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-
-export interface AudioClipProps {
-  id: string;
-  name: string;
-  start: number; // Start time in seconds
-  duration: number; // Duration in seconds
-  color: string;
-  selected?: boolean;
-  onSelect?: (id: string) => void;
-  onResize?: (id: string, newStart: number, newDuration: number) => void;
-  onMove?: (id: string, newStart: number) => void;
-}
+import { AudioClipProps } from './types/clipTypes';
+import AudioClipResizeHandle from './AudioClipResizeHandle';
+import WaveformVisualization from './WaveformVisualization';
+import { useClipInteraction } from '@/hooks/useClipInteraction';
 
 const AudioClip = ({ 
   id, 
@@ -25,11 +17,21 @@ const AudioClip = ({
   onResize,
   onMove
 }: AudioClipProps) => {
-  // State for tracking drag operations
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizingLeft, setIsResizingLeft] = useState(false);
-  const [isResizingRight, setIsResizingRight] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
+  // Use the clip interaction hook
+  const {
+    isDragging,
+    isResizingLeft,
+    isResizingRight,
+    handleMouseDown,
+    handleResizeLeftStart,
+    handleResizeRightStart,
+  } = useClipInteraction({
+    id,
+    start,
+    duration,
+    onMove,
+    onResize
+  });
   
   // Calculate position and width based on timeline
   const clipStyle = {
@@ -44,117 +46,6 @@ const AudioClip = ({
     if (onSelect && !isDragging && !isResizingLeft && !isResizingRight) {
       onSelect(id);
     }
-  };
-  
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    // Calculate offset from the left edge of the clip
-    const rect = e.currentTarget.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    setDragOffset(offsetX);
-    
-    setIsDragging(true);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-  
-  const handleResizeLeftStart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsResizingLeft(true);
-    document.addEventListener('mousemove', handleResizeLeftMove);
-    document.addEventListener('mouseup', handleResizeLeftEnd);
-  };
-  
-  const handleResizeRightStart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsResizingRight(true);
-    document.addEventListener('mousemove', handleResizeRightMove);
-    document.addEventListener('mouseup', handleResizeRightEnd);
-  };
-  
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || !onMove) return;
-    
-    // Get parent element (track) dimensions
-    const trackElement = (e.currentTarget as HTMLElement)?.closest('.track-timeline') as HTMLElement;
-    if (!trackElement) return;
-    
-    const trackRect = trackElement.getBoundingClientRect();
-    const trackWidth = trackRect.width;
-    
-    // Calculate new position relative to track
-    const newPosPixels = e.clientX - trackRect.left - dragOffset;
-    const newPosPercent = Math.max(0, newPosPixels / trackWidth);
-    
-    // Convert to time units (assuming track width = total duration)
-    const timelineScale = 16; // 16 seconds per track width
-    const newStartTime = newPosPercent * timelineScale;
-    
-    // Call the onMove callback
-    onMove(id, newStartTime);
-  };
-  
-  const handleResizeLeftMove = (e: MouseEvent) => {
-    if (!isResizingLeft || !onResize) return;
-    
-    // Get parent dimensions and calculate new start
-    const trackElement = (e.target as HTMLElement)?.closest('.track-timeline') as HTMLElement;
-    if (!trackElement) return;
-    
-    const trackRect = trackElement.getBoundingClientRect();
-    const newLeftPixels = e.clientX - trackRect.left;
-    const newLeftPercent = Math.max(0, newLeftPixels / trackRect.width);
-    
-    // Convert to time
-    const timelineScale = 16;
-    const newStart = newLeftPercent * timelineScale;
-    
-    // Ensure new duration is valid
-    const newDuration = Math.max(0.1, (start + duration) - newStart);
-    
-    // Call onResize callback
-    onResize(id, newStart, newDuration);
-  };
-  
-  const handleResizeRightMove = (e: MouseEvent) => {
-    if (!isResizingRight || !onResize) return;
-    
-    // Calculate new right edge position
-    const trackElement = (e.target as HTMLElement)?.closest('.track-timeline') as HTMLElement;
-    if (!trackElement) return;
-    
-    const trackRect = trackElement.getBoundingClientRect();
-    const newRightPixels = e.clientX - trackRect.left;
-    const newRightPercent = Math.min(1, Math.max(0, newRightPixels / trackRect.width));
-    
-    // Convert to time
-    const timelineScale = 16;
-    const newEnd = newRightPercent * timelineScale;
-    
-    // Calculate new duration
-    const newDuration = Math.max(0.1, newEnd - start);
-    
-    // Call onResize callback
-    onResize(id, start, newDuration);
-  };
-  
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-  };
-  
-  const handleResizeLeftEnd = () => {
-    setIsResizingLeft(false);
-    document.removeEventListener('mousemove', handleResizeLeftMove);
-    document.removeEventListener('mouseup', handleResizeLeftEnd);
-  };
-  
-  const handleResizeRightEnd = () => {
-    setIsResizingRight(false);
-    document.removeEventListener('mousemove', handleResizeRightMove);
-    document.removeEventListener('mouseup', handleResizeRightEnd);
   };
   
   return (
@@ -176,31 +67,24 @@ const AudioClip = ({
       <div className="flex-1 min-h-0 flex items-center justify-center">
         <div className="w-full h-full relative">
           {/* Waveform visualization */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            {[...Array(12)].map((_, i) => (
-              <div 
-                key={i}
-                className="w-[2px] mx-[1px] bg-white/40"
-                style={{
-                  height: `${20 + Math.sin(i / 2) * 20}%`
-                }}
-              />
-            ))}
-          </div>
+          <WaveformVisualization color={color} />
         </div>
       </div>
       
       {/* Resize handles */}
-      <div 
-        className="absolute left-0 top-0 bottom-0 w-1.5 cursor-w-resize group-hover:bg-white/20" 
-        onMouseDown={handleResizeLeftStart}
+      <AudioClipResizeHandle 
+        position="left"
+        onResizeStart={handleResizeLeftStart}
       />
-      <div 
-        className="absolute right-0 top-0 bottom-0 w-1.5 cursor-e-resize group-hover:bg-white/20"
-        onMouseDown={handleResizeRightStart}
+      <AudioClipResizeHandle 
+        position="right"
+        onResizeStart={handleResizeRightStart}
       />
     </div>
   );
 };
 
 export default AudioClip;
+
+// Export the type for use in other components
+export type { AudioClipProps };
