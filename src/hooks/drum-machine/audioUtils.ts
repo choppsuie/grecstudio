@@ -9,8 +9,8 @@ export const initializeAudio = async () => {
     console.log("Initializing audio context...");
     
     // Try to start/resume the audio context
-    // Use correct type checking for context state
-    if (Tone.context.state === "suspended" || Tone.context.state === "closed") {
+    // Fixed type checking for context state
+    if (Tone.context.state !== "running") {
       // Attempt to resume the context
       await Tone.context.resume();
       console.log("After resume, Tone.js state:", Tone.context.state);
