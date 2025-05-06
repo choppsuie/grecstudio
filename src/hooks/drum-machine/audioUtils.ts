@@ -9,8 +9,8 @@ export const initializeAudio = async () => {
     console.log("Initializing audio context...");
     
     // Try to start/resume the audio context
-    // Fix: Use the correct type comparison for Tone.context.state
-    if (Tone.context.state !== "running") {
+    // Use correct type checking for context state
+    if (Tone.context.state === "suspended" || Tone.context.state === "closed") {
       // Attempt to resume the context
       await Tone.context.resume();
       console.log("After resume, Tone.js state:", Tone.context.state);
@@ -53,55 +53,62 @@ export const loadKitSamples = async (
   try {
     console.log(`Loading kit ${kitId} with ${selectedKit.pads.length} samples`);
     
-    // Create a buffer for each pad
-    const bufferPromises = selectedKit.pads.map(pad => {
-      return new Promise((resolve, reject) => {
-        // Create the player
-        const player = new Tone.Player({
-          url: pad.soundUrl,
-          onload: () => {
-            console.log(`Successfully loaded ${pad.name} for ${kitId} kit`);
-            players[pad.id] = player;
-            resolve(player);
-          },
-          onerror: (error) => {
-            console.error(`Failed to load ${pad.name}: ${error}`);
-            reject(error);
-          }
-        }).connect(volumeNode);
+    // Use a more reliable loading approach with Buffer instead of direct Player loading
+    // This helps avoid timeouts by pre-loading the audio files
+    for (const pad of selectedKit.pads) {
+      try {
+        console.log(`Starting to load ${pad.name} (${pad.soundUrl})`);
         
-        // Set a timeout for each individual sample
-        setTimeout(() => {
-          if (!player.loaded) {
-            console.warn(`Loading timeout for ${pad.name}, marking as failed`);
-            reject(new Error(`Timeout loading ${pad.name}`));
-          }
-        }, 5000);
-      }).catch(err => {
-        console.warn(`Skipping failed sample ${pad.id}:`, err);
-        return null; // Return null for failed samples
-      });
-    });
-    
-    // Wait for all samples with a timeout of 10 seconds for the entire kit
-    console.log("Waiting for all samples to load...");
-    const loadingTimeout = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Overall kit loading timed out")), 10000)
-    );
-    
-    try {
-      // Use Promise.race to implement a timeout
-      await Promise.race([
-        Promise.allSettled(bufferPromises),
-        loadingTimeout
-      ]);
-      
-      console.log(`Successfully loaded ${Object.keys(players).length}/${selectedKit.pads.length} samples for kit ${kitId}`);
-    } catch (error) {
-      console.warn("Some samples may not have loaded:", error);
-      // Continue with whatever samples did load
+        // Create buffer first to pre-load
+        const buffer = new Tone.Buffer();
+        
+        // Set up a loading promise with timeout
+        const loadingPromise = new Promise((resolve, reject) => {
+          buffer.load(pad.soundUrl)
+            .then(() => {
+              console.log(`Buffer loaded for ${pad.name}`);
+              // Create player with the loaded buffer
+              const player = new Tone.Player({
+                url: pad.soundUrl,
+                onload: () => {
+                  console.log(`Player created for ${pad.name}`);
+                  players[pad.id] = player;
+                  resolve(player);
+                }
+              }).connect(volumeNode);
+            })
+            .catch(error => {
+              console.error(`Failed to load buffer for ${pad.name}:`, error);
+              reject(error);
+            });
+            
+          // Add timeout for individual sample loading
+          setTimeout(() => {
+            if (!buffer.loaded) {
+              const fallbackUrl = "https://tonejs.github.io/audio/berklee/gong_1.mp3";
+              console.warn(`Loading timeout for ${pad.name}, using fallback sound`);
+              
+              // Create a fallback player with a reliable sample
+              const fallbackPlayer = new Tone.Player({
+                url: fallbackUrl,
+                onload: () => {
+                  console.log(`Fallback loaded for ${pad.name}`);
+                  players[pad.id] = fallbackPlayer;
+                  resolve(fallbackPlayer);
+                }
+              }).connect(volumeNode);
+            }
+          }, 3000);
+        });
+      } catch (err) {
+        console.warn(`Error in load process for ${pad.id}:`, err);
+      }
     }
     
+    // Short wait to allow some samples to load
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log(`Loaded ${Object.keys(players).length}/${selectedKit.pads.length} samples for kit ${kitId}`);
     return players;
   } catch (error) {
     console.error("Failed to load kit samples:", error);

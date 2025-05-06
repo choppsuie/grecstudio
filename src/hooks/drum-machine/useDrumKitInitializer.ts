@@ -20,11 +20,17 @@ export const useDrumKitInitializer = (
   useEffect(() => {
     const initDrumMachine = async () => {
       try {
-        // Force start the audio context
-        await Tone.start().catch(e => console.warn("Initial Tone.start() failed, will retry:", e));
-        console.log("Tone.js context state:", Tone.context.state);
+        console.log("Setting up drum machine");
         
-        // Create volume node with higher initial volume regardless of context state
+        // Force start the audio context
+        try {
+          await Tone.start().catch(e => console.warn("Initial Tone.start() failed, will retry:", e));
+          console.log("Tone.js context state:", Tone.context.state);
+        } catch (e) {
+          console.warn("Failed to start Tone.js initially:", e);
+        }
+        
+        // Create volume node regardless of context state
         const volumeNode = createVolumeControl(-5);
         volumeNodeRef.current = volumeNode;
         setMainVolume(volumeNode);
@@ -33,34 +39,17 @@ export const useDrumKitInitializer = (
         // Update metadata even if audio isn't fully initialized yet
         updateCurrentKit('tr909');
         
-        // Try to initialize audio context
-        const initialized = await initializeAudio();
-        
-        if (!initialized) {
-          console.log("Audio context not running yet. User interaction needed.");
-          toast({
-            title: "Audio Needs Activation",
-            description: "Click 'Initialize Audio' button to enable sound playback",
-          });
-          return;
-        }
-        
-        // If context is running, try to load the kit
-        try {
-          await loadKit('tr909');
-        } catch (error) {
-          console.error("Failed to load default kit:", error);
-          toast({
-            title: "Loading Error",
-            description: "Failed to load drum kit samples. Click 'Initialize Audio' to retry.",
-            variant: "destructive"
-          });
-        }
+        // Don't automatically try to initialize audio on page load
+        // This now requires explicit user interaction
+        toast({
+          title: "Audio Ready",
+          description: "Click 'Initialize Audio' button when you're ready to play sounds",
+        });
       } catch (error) {
         console.error("Failed to initialize drum machine:", error);
         toast({
-          title: "Initialization Error",
-          description: "Failed to initialize audio engine. Click 'Initialize Audio' to retry.",
+          title: "Setup Issue",
+          description: "There was a problem setting up the drum machine. Click 'Initialize Audio' to retry.",
           variant: "destructive"
         });
       }
@@ -86,7 +75,7 @@ export const useDrumKitInitializer = (
         volumeNodeRef.current.dispose();
       }
     };
-  }, [toast]); // Removed dependencies that cause re-initialization
+  }, []);  // Run only once on component mount
 
   // Force initialization function for UI buttons
   const forceInitialize = useCallback(async () => {
@@ -97,25 +86,58 @@ export const useDrumKitInitializer = (
       await Tone.start();
       console.log("Tone.js context state after force init:", Tone.context.state);
       
+      // Ensure audio context is running
       const success = await initializeAudio();
       if (!success) {
         console.error("Failed to initialize audio context");
+        toast({
+          title: "Audio Error",
+          description: "Browser prevented audio playback. Please try again with a click.",
+          variant: "destructive"
+        });
         return false;
       }
       
+      // Set up the volume node if needed
       if (!state.mainVolume && !volumeNodeRef.current) {
         const volumeNode = createVolumeControl(-5);
         volumeNodeRef.current = volumeNode;
         setMainVolume(volumeNode);
       }
       
+      // Show loading toast
+      toast({
+        title: "Loading Sounds",
+        description: "Loading drum samples, please wait..."
+      });
+      
       // Always attempt to load kit after initialization
-      return await loadKit(state.selectedKit);
+      const kitLoaded = await loadKit(state.selectedKit);
+      
+      if (kitLoaded) {
+        toast({
+          title: "Ready to Play",
+          description: "Drum machine initialized successfully!",
+        });
+        return true;
+      } else {
+        toast({
+          title: "Loading Issue",
+          description: "Some sounds may not have loaded. You can still try to play.",
+          variant: "default"
+        });
+        return true; // Return true so user can still interact
+      }
     } catch (error) {
       console.error("Force initialization failed:", error);
+      toast({
+        title: "Initialization Failed",
+        description: "Could not initialize audio. Please click the button again.",
+        variant: "destructive"
+      });
       return false;
     }
-  }, [loadKit, state.mainVolume, state.selectedKit, setMainVolume, volumeNodeRef]);
+  }, [loadKit, state.mainVolume, state.selectedKit, setMainVolume, toast, volumeNodeRef]);
 
   return { forceInitialize };
 };
