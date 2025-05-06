@@ -14,7 +14,11 @@ const DrumFooter: React.FC<DrumFooterProps> = ({
 }) => {
   return (
     <div className="mt-4 flex justify-between">
-      <Button size="sm" variant="outline" className="text-cyber-purple">
+      <Button 
+        size="sm" 
+        variant="outline" 
+        className="bg-cyber-darker text-cyber-purple border-cyber-purple/50 hover:bg-cyber-purple/20"
+      >
         <Settings className="w-4 h-4 mr-1" />
         Settings
       </Button>
@@ -22,7 +26,9 @@ const DrumFooter: React.FC<DrumFooterProps> = ({
         size="sm" 
         variant={showPatternEditor ? "default" : "outline"}
         onClick={onTogglePatternEditor}
-        className={showPatternEditor ? "bg-cyber-purple text-white" : "text-cyber-purple"}
+        className={showPatternEditor 
+          ? "bg-cyber-purple text-white hover:bg-cyber-purple/90" 
+          : "bg-cyber-darker text-cyber-purple border-cyber-purple/50 hover:bg-cyber-purple/20"}
       >
         <Music className="w-4 h-4 mr-1" />
         {showPatternEditor ? "Hide Editor" : "Pattern Editor"}

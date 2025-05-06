@@ -53,7 +53,7 @@ const TransportControls = ({
           variant="ghost"
           size="icon"
           className={cn(
-            "h-7 w-7 transition-all",
+            "h-7 w-7 transition-all text-cyber-purple",
             "hover:bg-cyber-purple/20"
           )}
           onClick={onStop}
@@ -64,7 +64,7 @@ const TransportControls = ({
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 hover:bg-cyber-purple/20"
+          className="h-7 w-7 hover:bg-cyber-purple/20 text-cyber-purple"
         >
           <SkipBack className="h-3.5 w-3.5" />
         </Button>
@@ -73,7 +73,7 @@ const TransportControls = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 bg-cyber-purple/20 hover:bg-cyber-purple/30"
+            className="h-7 w-7 bg-cyber-purple/20 hover:bg-cyber-purple/30 text-cyber-purple"
             onClick={onPlay}
           >
             <Play className="h-3.5 w-3.5" />
@@ -82,7 +82,7 @@ const TransportControls = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 bg-cyber-purple/20 hover:bg-cyber-purple/30"
+            className="h-7 w-7 bg-cyber-purple/20 hover:bg-cyber-purple/30 text-cyber-purple"
             onClick={onPause}
           >
             <Pause className="h-3.5 w-3.5" />
@@ -92,14 +92,14 @@ const TransportControls = ({
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 hover:bg-cyber-purple/20"
+          className="h-7 w-7 hover:bg-cyber-purple/20 text-cyber-purple"
         >
           <SkipForward className="h-3.5 w-3.5" />
         </Button>
       </div>
       
       <div className="flex items-center space-x-2">
-        <div className="font-mono text-xs bg-cyber-dark px-2 py-1 rounded-sm min-w-[80px] text-center shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]">
+        <div className="font-mono text-xs bg-cyber-dark px-2 py-1 rounded-sm min-w-[80px] text-center shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)] text-cyber-purple">
           {currentTime}
         </div>
         
@@ -110,7 +110,7 @@ const TransportControls = ({
             onChange={handleBpmChange}
             onBlur={handleBpmBlur}
             onKeyDown={handleKeyDown}
-            className="h-7 w-12 bg-transparent border-none text-xs p-0 text-center"
+            className="h-7 w-12 bg-transparent border-none text-xs p-0 text-center text-cyber-purple"
           />
           <span className="text-xs text-cyber-purple/70">BPM</span>
         </div>

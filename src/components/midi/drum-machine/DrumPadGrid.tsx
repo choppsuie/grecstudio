@@ -31,8 +31,10 @@ const DrumPadGrid: React.FC<DrumPadGridProps> = ({
           onClick={() => onPadClick(pad.id)}
           disabled={!isLoaded}
         >
-          <span className="text-xs font-bold mb-1 text-white">{pad.name}</span>
-          <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-dark/30 text-cyber-purple">
+          <span className="text-xs font-bold mb-1" style={{ color: pad.color }}>
+            {pad.name}
+          </span>
+          <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-dark/50 text-cyber-purple">
             {pad.key.toUpperCase()}
           </span>
         </button>

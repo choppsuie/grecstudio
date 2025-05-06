@@ -38,15 +38,27 @@ const PatternEditor: React.FC<PatternEditorProps> = ({
             size="sm" 
             variant="outline" 
             onClick={togglePlay} 
-            className={isPlaying ? "bg-cyber-purple/20 text-cyber-purple" : "text-cyber-purple"}
+            className={isPlaying 
+              ? "bg-cyber-purple/20 text-cyber-purple border-cyber-purple/50" 
+              : "bg-cyber-darker text-cyber-purple border-cyber-purple/50 hover:bg-cyber-purple/20"}
           >
             <PlayCircle className="w-4 h-4 mr-1" />
             {isPlaying ? "Stop" : "Play"}
           </Button>
-          <Button size="sm" variant="outline" onClick={clearPattern} className="text-cyber-purple">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={clearPattern} 
+            className="bg-cyber-darker text-cyber-purple border-cyber-purple/50 hover:bg-cyber-purple/20"
+          >
             Clear
           </Button>
-          <Button size="sm" variant="outline" onClick={savePattern} className="text-cyber-purple">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={savePattern} 
+            className="bg-cyber-darker text-cyber-purple border-cyber-purple/50 hover:bg-cyber-purple/20"
+          >
             <Save className="w-4 h-4 mr-1" />
             Save
           </Button>
@@ -71,7 +83,7 @@ const PatternEditor: React.FC<PatternEditorProps> = ({
         {currentPads.map((pad) => (
           <div key={pad.id} className="flex items-center mb-1">
             <div 
-              className="w-12 text-xs truncate mr-1 py-1 px-2 text-white"
+              className="w-12 text-xs truncate mr-1 py-1 px-2"
               style={{ color: pad.color }}
             >
               {pad.name}

@@ -52,7 +52,9 @@ const DrumControls: React.FC<DrumControlsProps> = ({
               size="sm"
               onClick={() => onKitChange(kit.id)}
               disabled={!isLoaded && selectedKit !== kit.id || isRetrying}
-              className={selectedKit === kit.id ? "bg-cyber-purple text-white" : "text-cyber-purple"}
+              className={selectedKit === kit.id 
+                ? "bg-cyber-purple text-white hover:bg-cyber-purple/90" 
+                : "bg-cyber-darker text-cyber-purple border-cyber-purple/50 hover:bg-cyber-purple/20"}
             >
               {kit.name}
             </Button>
