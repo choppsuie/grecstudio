@@ -6,11 +6,23 @@ import drumKits from "./drumKits";
 // Initialize audio context and start Tone.js with better error handling
 export const initializeAudio = async () => {
   try {
+    console.log("Initializing audio context...");
+    
+    // Try to start/resume the audio context
     if (Tone.context.state !== "running") {
-      await Tone.start();
+      // Attempt to resume the context
       await Tone.context.resume();
-      console.log("Tone.js initialized with state:", Tone.context.state);
+      console.log("After resume, Tone.js state:", Tone.context.state);
+      
+      // If still not running, try more aggressive approach
+      if (Tone.context.state !== "running") {
+        // Create user gesture that will be used to start audio
+        console.log("Context still not running, trying Tone.start()...");
+        await Tone.start();
+        console.log("After Tone.start(), state:", Tone.context.state);
+      }
     }
+    
     return Tone.context.state === "running";
   } catch (error) {
     console.error("Error initializing Tone.js:", error);
@@ -40,41 +52,55 @@ export const loadKitSamples = async (
   try {
     console.log(`Loading kit ${kitId} with ${selectedKit.pads.length} samples`);
     
-    // Create a player for each pad and connect to volume
-    for (const pad of selectedKit.pads) {
-      try {
-        console.log(`Attempting to load sound: ${pad.name} (${pad.soundUrl})`);
-        
+    // Create a buffer for each pad
+    const bufferPromises = selectedKit.pads.map(pad => {
+      return new Promise((resolve, reject) => {
+        // Create the player
         const player = new Tone.Player({
           url: pad.soundUrl,
           onload: () => {
             console.log(`Successfully loaded ${pad.name} for ${kitId} kit`);
+            players[pad.id] = player;
+            resolve(player);
           },
           onerror: (error) => {
             console.error(`Failed to load ${pad.name}: ${error}`);
-          },
-          volume: 0, // Neutral volume
-          fadeIn: 0.01, // Small fade in to avoid clicks
-          fadeOut: 0.01 // Small fade out
+            reject(error);
+          }
         }).connect(volumeNode);
         
-        players[pad.id] = player;
-      } catch (error) {
-        console.error(`Error creating player for ${pad.name}:`, error);
-      }
+        // Set a timeout for each individual sample
+        setTimeout(() => {
+          if (!player.loaded) {
+            console.warn(`Loading timeout for ${pad.name}, marking as failed`);
+            reject(new Error(`Timeout loading ${pad.name}`));
+          }
+        }, 5000);
+      }).catch(err => {
+        console.warn(`Skipping failed sample ${pad.id}:`, err);
+        return null; // Return null for failed samples
+      });
+    });
+    
+    // Wait for all samples with a timeout of 10 seconds for the entire kit
+    console.log("Waiting for all samples to load...");
+    const loadingTimeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Overall kit loading timed out")), 10000)
+    );
+    
+    try {
+      // Use Promise.race to implement a timeout
+      await Promise.race([
+        Promise.allSettled(bufferPromises),
+        loadingTimeout
+      ]);
+      
+      console.log(`Successfully loaded ${Object.keys(players).length}/${selectedKit.pads.length} samples for kit ${kitId}`);
+    } catch (error) {
+      console.warn("Some samples may not have loaded:", error);
+      // Continue with whatever samples did load
     }
     
-    // Wait for all samples to load with a longer timeout
-    const loadPromise = Tone.loaded();
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Loading timed out")), 15000);
-    });
-    
-    await Promise.race([loadPromise, timeoutPromise]).catch(err => {
-      console.warn("Some samples may not have loaded properly:", err);
-    });
-    
-    console.log(`Successfully created ${Object.keys(players).length} players for kit ${kitId}`);
     return players;
   } catch (error) {
     console.error("Failed to load kit samples:", error);
