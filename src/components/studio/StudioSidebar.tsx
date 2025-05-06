@@ -1,77 +1,126 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { 
+  Sliders, 
+  Music, 
+  Layers, 
+  Settings, 
+  Share2, 
+  User2, 
+  Users,
+  X
+} from "lucide-react";
+import { useStudio } from "@/contexts/StudioHooks";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sliders, Music, Layers, MicIcon } from "lucide-react";
-import PluginsPanel from './PluginsPanel';
-import DrumPads from '../midi/DrumPads';
-import MIDIKeyboardPanel from './MIDIKeyboardPanel';
-import MelodicPatternRecorder from './MelodicPatternRecorder';
-import { useProject } from '@/contexts/StudioHooks';
+import EffectsPanel from './EffectsPanel';
 
 const StudioSidebar = () => {
-  const { showMixer } = useProject();
-  const [activeTab, setActiveTab] = useState("plugins");
+  const { showMixer, setShowMixer, projectId, collaborators, handleShare } = useStudio();
   
   if (!showMixer) return null;
   
   return (
-    <div className="w-80 min-w-80 border-l border-cyber-purple/20 bg-cyber-darker overflow-y-auto">
-      <Tabs 
-        defaultValue="plugins" 
-        className="h-full flex flex-col"
-        value={activeTab}
-        onValueChange={setActiveTab}
-      >
-        <TabsList className="flex justify-between bg-cyber-dark p-1 rounded-none border-b border-cyber-purple/20">
-          <TabsTrigger 
-            value="plugins" 
-            className="flex items-center gap-1 data-[state=active]:bg-cyber-purple/20"
-          >
-            <Sliders className="h-3.5 w-3.5" />
-            <span className="text-xs">Plugins</span>
+    <div className="w-72 bg-cyber-darker border-l border-cyber-purple/20 flex flex-col">
+      <div className="flex justify-between items-center p-2 border-b border-cyber-purple/20">
+        <h3 className="text-sm font-medium">Studio Controls</h3>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          className="h-7 w-7 text-gray-400 hover:bg-cyber-purple/10 hover:text-white"
+          onClick={() => setShowMixer(false)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      <Tabs defaultValue="mixer" className="flex-1 flex flex-col">
+        <TabsList className="justify-between px-2 pt-2 bg-transparent">
+          <TabsTrigger value="mixer" className="data-[state=active]:bg-cyber-purple/20">
+            <Sliders className="h-4 w-4 mr-1" />
+            <span className="text-xs">Mixer</span>
           </TabsTrigger>
-          
-          <TabsTrigger 
-            value="drums"
-            className="flex items-center gap-1 data-[state=active]:bg-cyber-purple/20"
-          >
-            <Layers className="h-3.5 w-3.5" />
-            <span className="text-xs">Drums</span>
+          <TabsTrigger value="instruments" className="data-[state=active]:bg-cyber-purple/20">
+            <Music className="h-4 w-4 mr-1" />
+            <span className="text-xs">Instruments</span>
           </TabsTrigger>
-          
-          <TabsTrigger 
-            value="keys"
-            className="flex items-center gap-1 data-[state=active]:bg-cyber-purple/20"
-          >
-            <Music className="h-3.5 w-3.5" />
-            <span className="text-xs">Keys</span>
-          </TabsTrigger>
-
-          <TabsTrigger 
-            value="melody"
-            className="flex items-center gap-1 data-[state=active]:bg-cyber-purple/20"
-          >
-            <MicIcon className="h-3.5 w-3.5" />
-            <span className="text-xs">Recorder</span>
+          <TabsTrigger value="projects" className="data-[state=active]:bg-cyber-purple/20">
+            <Layers className="h-4 w-4 mr-1" />
+            <span className="text-xs">Projects</span>
           </TabsTrigger>
         </TabsList>
         
-        <div className="flex-1 p-3 overflow-y-auto">
-          <TabsContent value="plugins" className="h-full mt-0">
-            <PluginsPanel />
+        <Separator className="bg-cyber-purple/20 my-2" />
+        
+        <div className="flex-1 overflow-y-auto px-4">
+          <TabsContent value="mixer" className="h-full">
+            <EffectsPanel />
           </TabsContent>
           
-          <TabsContent value="drums" className="h-full mt-0">
-            <DrumPads />
+          <TabsContent value="instruments" className="h-full">
+            <div className="space-y-4">
+              <div className="glass-card p-3 rounded-lg">
+                <h4 className="text-sm font-medium mb-2">Available Instruments</h4>
+                <div className="space-y-2">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Music className="h-4 w-4 mr-2" />
+                    Synth Lead
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Music className="h-4 w-4 mr-2" />
+                    Bass Synth
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Music className="h-4 w-4 mr-2" />
+                    TR-909 Drums
+                  </Button>
+                </div>
+              </div>
+            </div>
           </TabsContent>
           
-          <TabsContent value="keys" className="h-full mt-0">
-            <MIDIKeyboardPanel />
+          <TabsContent value="projects" className="h-full">
+            <div className="space-y-4">
+              <div className="glass-card p-3 rounded-lg">
+                <h4 className="text-sm font-medium mb-2">Project: {projectId || 'Untitled'}</h4>
+                <p className="text-xs text-white/60 mb-2">
+                  Collaborative DAW session
+                </p>
+                <Button variant="default" size="sm" onClick={handleShare} className="w-full mb-2">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share Project
+                </Button>
+                
+                {collaborators.length > 0 && (
+                  <div className="mt-4">
+                    <h5 className="text-xs text-white/60 mb-2">Collaborators</h5>
+                    <div className="space-y-2">
+                      {collaborators.map(collab => (
+                        <div key={collab.id} className="flex items-center gap-2">
+                          <div className={`h-2 w-2 rounded-full ${collab.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`} />
+                          <span className="text-xs">{collab.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </TabsContent>
-
-          <TabsContent value="melody" className="h-full mt-0">
-            <MelodicPatternRecorder />
-          </TabsContent>
+        </div>
+        
+        <div className="p-3 border-t border-cyber-purple/20">
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="sm" className="flex-1">
+              <User2 className="h-4 w-4 mr-2" />
+              Profile
+            </Button>
+            <Button variant="ghost" size="sm" className="flex-1">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+          </div>
         </div>
       </Tabs>
     </div>

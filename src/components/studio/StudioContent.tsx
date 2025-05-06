@@ -7,11 +7,13 @@ import StudioSidebar from './StudioSidebar';
 import TrackTimeline from './TrackTimeline';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import DAWCanvas from './DAWCanvas';
 
 const StudioContent = () => {
   const { showMixer, isPlaying } = useStudio();
   const { tracks, updateTrack, addTrack } = useTrackManager();
   const [timelineZoom, setTimelineZoom] = useState(100);
+  const [showDAWCanvas, setShowDAWCanvas] = useState(true);
   
   const handleZoomChange = (newZoom: number) => {
     setTimelineZoom(Math.max(50, Math.min(200, newZoom)));
@@ -24,6 +26,14 @@ const StudioContent = () => {
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-sm font-medium text-cyber-purple">Timeline</h2>
             <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="h-7 py-0 px-3 text-xs flex items-center gap-1"
+                onClick={() => setShowDAWCanvas(!showDAWCanvas)}
+              >
+                {showDAWCanvas ? "Hide" : "Show"} Instruments
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -43,6 +53,8 @@ const StudioContent = () => {
               </Button>
             </div>
           </div>
+          
+          {showDAWCanvas && <DAWCanvas />}
           
           <div className="flex flex-row">
             <div className="w-64 min-w-64 pr-2 flex flex-col">
