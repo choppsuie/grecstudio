@@ -2,7 +2,7 @@
 import React from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, X, Waveform } from 'lucide-react';
+import { PlusCircle, X, AudioWaveform } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AuxSendProps {
@@ -93,7 +93,7 @@ const AuxSendPanel: React.FC<AuxSendPanelProps> = ({
     <div className="p-2 bg-cyber-dark/60 rounded-md shadow-inner border border-cyber-purple/20">
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-xs font-semibold text-cyber-purple">Sends & Routing</h4>
-        <Waveform className="h-3 w-3 text-cyber-purple/70" />
+        <AudioWaveform className="h-3 w-3 text-cyber-purple/70" />
       </div>
       
       <div className="space-y-1">

@@ -1,10 +1,11 @@
+
 import * as Tone from 'tone';
 
 export interface AuxSend {
   id: string;
   name: string;
   sendLevel: number;
-  effect: Tone.Effect | null;
+  effect: any | null; // Changed from Tone.Effect to any
 }
 
 export interface AudioBus {
@@ -13,7 +14,7 @@ export interface AudioBus {
   type: "main" | "aux" | "group";
   input: Tone.Gain;
   output: Tone.Gain;
-  effects: Tone.Effect[];
+  effects: any[]; // Changed from Tone.Effect[] to any[]
   isActive: boolean;
 }
 
@@ -66,7 +67,7 @@ export class AudioRouting {
   }
   
   // Add an effect to a bus
-  addEffect(busId: string, effect: Tone.Effect): void {
+  addEffect(busId: string, effect: any): void { // Changed from Tone.Effect to any
     const bus = this.buses.get(busId);
     if (!bus) return;
     
@@ -93,7 +94,7 @@ export class AudioRouting {
   
   // Create an aux send (like in ProTools)
   createAuxSend(id: string, name: string, effectType: "reverb" | "delay" | "chorus" | null = null): AuxSend {
-    let effect: Tone.Effect | null = null;
+    let effect: any | null = null; // Changed from Tone.Effect to any
     
     // Create the specified effect
     if (effectType) {
@@ -292,7 +293,7 @@ export const effectsPresets = {
       release: 0.2
     }
   },
-  applyPreset: (effect: Tone.Effect, preset: Record<string, any>): void => {
+  applyPreset: (effect: any, preset: Record<string, any>): void => { // Changed from Tone.Effect to any
     Object.entries(preset).forEach(([key, value]) => {
       if ((effect as any)[key] !== undefined) {
         (effect as any)[key] = value;

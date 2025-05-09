@@ -16,7 +16,7 @@ export const initializeAudio = async () => {
       console.log("After resume, Tone.js state:", Tone.context.state);
       
       // If still not running, try more aggressive approach
-      if (Tone.context.state !== "running") {
+      if (Tone.context.state === "suspended" || Tone.context.state === "closed") {
         // Create user gesture that will be used to start audio
         console.log("Context still not running, trying Tone.start()...");
         await Tone.start();
