@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 import { useToast } from '@/hooks/use-toast';
+import { Marker } from '@/components/studio/MarkerEditor';
 
 interface PlaybackContextType {
   isPlaying: boolean;
@@ -10,6 +11,7 @@ interface PlaybackContextType {
   timelineRef: React.RefObject<HTMLDivElement>;
   currentTime: number;
   masterVolume: number;
+  markers: Marker[];
   
   // Methods
   setIsPlaying: (value: boolean) => void;
@@ -23,6 +25,10 @@ interface PlaybackContextType {
   handleMIDINoteOn: (note: number, velocity: number) => void;
   handleMIDINoteOff: (note: number) => void;
   seekToPosition: (position: number) => void;
+  addMarker: (name: string) => void;
+  updateMarker: (marker: Marker) => void;
+  deleteMarker: (markerId: string) => void;
+  jumpToMarker: (markerId: string) => void;
 }
 
 // Export the context so it can be imported in other files
@@ -43,12 +49,12 @@ interface PlaybackProviderProps {
 export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) => {
   const { toast } = useToast();
   
-  // Remove useSynth dependency to avoid circular reference
   const [isPlaying, setIsPlaying] = useState(false);
   const [toneInitialized, setToneInitialized] = useState(false);
   const [bpm, setBpm] = useState(120);
   const [currentTime, setCurrentTime] = useState(0);
   const [masterVolume, setMasterVolume] = useState(75);
+  const [markers, setMarkers] = useState<Marker[]>([]);
   
   const timelineRef = useRef<HTMLDivElement>(null);
   const timerId = useRef<number | null>(null);
@@ -159,6 +165,40 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
     }
   };
   
+  // ProTools-style markers
+  const addMarker = (name: string = `Marker ${markers.length + 1}`) => {
+    const newMarker: Marker = {
+      id: `marker_${Date.now()}`,
+      name,
+      time: currentTime,
+      color: '#8B5CF6'
+    };
+    
+    setMarkers([...markers, newMarker]);
+    
+    toast({
+      title: "Marker Added",
+      description: `Added marker "${name}" at ${currentTime.toFixed(2)}s`,
+    });
+  };
+  
+  const updateMarker = (updatedMarker: Marker) => {
+    setMarkers(markers.map(marker => 
+      marker.id === updatedMarker.id ? updatedMarker : marker
+    ));
+  };
+  
+  const deleteMarker = (markerId: string) => {
+    setMarkers(markers.filter(marker => marker.id !== markerId));
+  };
+  
+  const jumpToMarker = (markerId: string) => {
+    const marker = markers.find(m => m.id === markerId);
+    if (marker) {
+      seekToPosition(marker.time);
+    }
+  };
+  
   const handleMIDINoteOn = (note: number, velocity: number = 100) => {
     console.log(`MIDI Note On: ${note}, velocity: ${velocity}`);
     // Removed synth.playNote handling - MIDI notes will be handled elsewhere
@@ -176,6 +216,7 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
     timelineRef,
     currentTime,
     masterVolume,
+    markers,
     
     setIsPlaying,
     setBpm,
@@ -191,6 +232,10 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
     handleMIDINoteOn,
     handleMIDINoteOff,
     seekToPosition,
+    addMarker,
+    updateMarker,
+    deleteMarker,
+    jumpToMarker
   };
 
   return <PlaybackContext.Provider value={value}>{children}</PlaybackContext.Provider>;
