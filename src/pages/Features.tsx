@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -74,7 +73,7 @@ const features = [
 
 const Features = () => {
   return (
-    <div className="min-h-screen bg-cyber-dark text-white flex flex-col">
+    <div className="min-h-screen bg-cyber-dark text-cyber-text flex flex-col">
       <Navbar />
       
       <div className="flex-1 pt-24 pb-16">
@@ -86,22 +85,22 @@ const Features = () => {
                 Professional Studio Tools
               </span>
               <br />
-              <span className="text-white">
+              <span className="text-cyber-text">
                 In Your Browser
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-white/70 mb-8">
+            <p className="text-lg md:text-xl text-cyber-text-muted mb-8">
               GRecStudio combines the power of professional digital audio workstations with the accessibility of cloud technology, enabling seamless music creation and collaboration.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button asChild size="lg" className="bg-gradient-to-r from-cyber-red to-cyber-purple hover:opacity-90 text-white px-6 py-6">
+              <Button asChild size="lg" className="bg-gradient-to-r from-cyber-red to-cyber-purple hover:opacity-90 text-cyber-text px-6 py-6">
                 <Link to="/studio">
                   Try Studio Now
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-cyber-red/50 hover:bg-cyber-red/20 text-white px-6 py-6">
+              <Button asChild variant="outline" size="lg" className="border-cyber-red/50 hover:bg-cyber-red/20 text-cyber-text px-6 py-6">
                 <Link to="/pricing">
                   View Pricing
                 </Link>
@@ -124,7 +123,7 @@ const Features = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-cyber-red to-cyber-purple rounded-full blur-2xl opacity-20 -z-10"></div>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-white/70">{feature.description}</p>
+                <p className="text-cyber-text/70">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -142,56 +141,56 @@ const Features = () => {
                 <table className="w-full min-w-[640px]">
                   <thead>
                     <tr className="border-b border-cyber-purple/20">
-                      <th className="py-4 px-6 text-left text-lg">Feature</th>
+                      <th className="py-4 px-6 text-left text-lg text-cyber-text">Feature</th>
                       <th className="py-4 px-6 text-center text-lg">
                         <span className="bg-gradient-to-r from-cyber-red to-cyber-purple bg-clip-text text-transparent font-bold">GRecStudio</span>
                       </th>
-                      <th className="py-4 px-6 text-center text-lg">Traditional DAWs</th>
-                      <th className="py-4 px-6 text-center text-lg">Basic Cloud Tools</th>
+                      <th className="py-4 px-6 text-center text-lg text-cyber-text">Traditional DAWs</th>
+                      <th className="py-4 px-6 text-center text-lg text-cyber-text">Basic Cloud Tools</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b border-cyber-purple/10">
-                      <td className="py-4 px-6 text-white/90">Professional Audio Quality</td>
+                      <td className="py-4 px-6 text-cyber-text">Professional Audio Quality</td>
                       <td className="py-4 px-6 text-center text-cyber-red">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">Limited</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">✓</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">Limited</td>
                     </tr>
                     <tr className="border-b border-cyber-purple/10">
-                      <td className="py-4 px-6 text-white/90">Real-time Collaboration</td>
+                      <td className="py-4 px-6 text-cyber-text">Real-time Collaboration</td>
                       <td className="py-4 px-6 text-center text-cyber-red">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">Limited</td>
-                      <td className="py-4 px-6 text-center text-white/70">Sometimes</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">Limited</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">Sometimes</td>
                     </tr>
                     <tr className="border-b border-cyber-purple/10">
-                      <td className="py-4 px-6 text-white/90">No Software Installation</td>
+                      <td className="py-4 px-6 text-cyber-text">No Software Installation</td>
                       <td className="py-4 px-6 text-center text-cyber-red">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">✗</td>
-                      <td className="py-4 px-6 text-center text-white/70">✓</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">✗</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">✓</td>
                     </tr>
                     <tr className="border-b border-cyber-purple/10">
-                      <td className="py-4 px-6 text-white/90">Cross-Platform</td>
+                      <td className="py-4 px-6 text-cyber-text">Cross-Platform</td>
                       <td className="py-4 px-6 text-center text-cyber-red">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">Some</td>
-                      <td className="py-4 px-6 text-center text-white/70">✓</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">Some</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">✓</td>
                     </tr>
                     <tr className="border-b border-cyber-purple/10">
-                      <td className="py-4 px-6 text-white/90">Advanced Mixing Tools</td>
+                      <td className="py-4 px-6 text-cyber-text">Advanced Mixing Tools</td>
                       <td className="py-4 px-6 text-center text-cyber-red">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">Limited</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">✓</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">Limited</td>
                     </tr>
                     <tr className="border-b border-cyber-purple/10">
-                      <td className="py-4 px-6 text-white/90">AI-Enhanced Production</td>
+                      <td className="py-4 px-6 text-cyber-text">AI-Enhanced Production</td>
                       <td className="py-4 px-6 text-center text-cyber-red">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">Limited</td>
-                      <td className="py-4 px-6 text-center text-white/70">Limited</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">Limited</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">Limited</td>
                     </tr>
                     <tr>
-                      <td className="py-4 px-6 text-white/90">Built-in Communication</td>
+                      <td className="py-4 px-6 text-cyber-text">Built-in Communication</td>
                       <td className="py-4 px-6 text-center text-cyber-red">✓</td>
-                      <td className="py-4 px-6 text-center text-white/70">✗</td>
-                      <td className="py-4 px-6 text-center text-white/70">Some</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">✗</td>
+                      <td className="py-4 px-6 text-center text-cyber-text-muted">Some</td>
                     </tr>
                   </tbody>
                 </table>
@@ -209,21 +208,21 @@ const Features = () => {
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyber-red opacity-20 rounded-full blur-[80px]"></div>
             </div>
             
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-cyber-text">
               Ready to Transform Your Production Workflow?
             </h2>
             
-            <p className="text-lg text-white/70 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-cyber-text-muted mb-8 max-w-2xl mx-auto">
               Join thousands of musicians and producers who are already creating amazing music with GRecStudio's powerful cloud platform.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button asChild size="lg" className="bg-gradient-to-r from-cyber-red to-cyber-purple hover:opacity-90 text-white px-6 py-6">
+              <Button asChild size="lg" className="bg-gradient-to-r from-cyber-red to-cyber-purple hover:opacity-90 text-cyber-text px-6 py-6">
                 <Link to="/auth?sign-up=true">
                   Get Started Free
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white/30 hover:bg-white/10 text-white px-6 py-6">
+              <Button asChild variant="outline" size="lg" className="border-white/30 hover:bg-white/10 text-cyber-text px-6 py-6">
                 <Link to="/studio">
                   View Demo
                 </Link>

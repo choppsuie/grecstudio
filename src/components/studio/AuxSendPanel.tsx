@@ -24,8 +24,8 @@ const AuxSend: React.FC<AuxSendProps> = ({
     <div className="flex items-center gap-2 py-1 border-b border-cyber-purple/10">
       <div className="flex-1">
         <div className="flex justify-between items-center">
-          <span className="text-xs font-medium truncate">{name}</span>
-          <span className="text-[10px] text-cyber-purple/70">{Math.round(level)}%</span>
+          <span className="text-xs font-medium truncate text-cyber-text">{name}</span>
+          <span className="text-[10px] text-cyber-purple">{Math.round(level)}%</span>
         </div>
         <Slider
           value={[level]}
@@ -39,7 +39,7 @@ const AuxSend: React.FC<AuxSendProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        className="h-5 w-5 rounded-full hover:bg-cyber-purple/10 text-cyber-purple/70"
+        className="h-5 w-5 rounded-full hover:bg-cyber-purple/10 text-cyber-purple/80"
         onClick={() => onDelete(id)}
       >
         <X className="h-3 w-3" />
@@ -98,7 +98,7 @@ const AuxSendPanel: React.FC<AuxSendPanelProps> = ({
       
       <div className="space-y-1">
         {sends.length === 0 ? (
-          <div className="text-xs text-center py-2 text-cyber-purple/50">
+          <div className="text-xs text-center py-2 text-cyber-text-subtle">
             No sends configured
           </div>
         ) : (
@@ -123,7 +123,7 @@ const AuxSendPanel: React.FC<AuxSendPanelProps> = ({
                 key={bus.id}
                 variant="outline"
                 size="sm"
-                className="h-6 text-xs py-0 px-2 bg-cyber-darker border-cyber-purple/20"
+                className="h-6 text-xs py-0 px-2 bg-cyber-darker border-cyber-purple/20 text-cyber-text"
                 onClick={() => handleAddSend(bus.id)}
               >
                 <PlusCircle className="h-3 w-3 mr-1" />

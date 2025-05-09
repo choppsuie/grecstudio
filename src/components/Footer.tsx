@@ -5,7 +5,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="bg-cyber-darker text-white/70 py-12 border-t border-cyber-red/20">
+    <footer className="bg-cyber-darker text-cyber-text-muted py-12 border-t border-cyber-red/20">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-1">
@@ -18,7 +18,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4 text-white">Product</h4>
+            <h4 className="font-semibold mb-4 text-cyber-text">Product</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/features" className="hover:text-cyber-red transition-colors">
@@ -39,7 +39,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4 text-white">Resources</h4>
+            <h4 className="font-semibold mb-4 text-cyber-text">Resources</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/support" className="hover:text-cyber-red transition-colors">
@@ -55,7 +55,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4 text-white">Legal</h4>
+            <h4 className="font-semibold mb-4 text-cyber-text">Legal</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/terms" className="hover:text-cyber-red transition-colors">
@@ -76,13 +76,13 @@ const Footer = () => {
             &copy; {currentYear} Guyllotine Records LLC. All rights reserved.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-cyber-red transition-colors">
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-cyber-text-muted hover:text-cyber-red transition-colors">
               Twitter
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-cyber-red transition-colors">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-cyber-text-muted hover:text-cyber-red transition-colors">
               Instagram
             </a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-cyber-red transition-colors">
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-cyber-text-muted hover:text-cyber-red transition-colors">
               YouTube
             </a>
           </div>

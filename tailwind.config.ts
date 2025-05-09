@@ -63,7 +63,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Cyberpunk colors - replacing previous custom colors
+				// Cyberpunk colors - enhanced for better text readability
 				cyber: {
 					"red": "#ED213A",
 					"light-red": "#F9636F",
@@ -72,7 +72,10 @@ export default {
 					"dark": "#131419",
 					"darker": "#0A0B0E",
 					"cyan": "#0CFCFC",
-					"soft-blue": "#D3E4FD"
+					"soft-blue": "#D3E4FD",
+					"text": "#F2F2F3",
+					"text-muted": "#D1D1D4",
+					"text-subtle": "#A7A7AD"
 				}
 			},
 			borderRadius: {

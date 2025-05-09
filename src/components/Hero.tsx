@@ -25,10 +25,10 @@ const Hero = () => {
               Create Music Together
             </span>
             <br />
-            <span className="text-white">in Real-Time, Anywhere</span>
+            <span className="text-cyber-text">in Real-Time, Anywhere</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-white/70 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-cyber-text-muted mb-8 max-w-2xl mx-auto">
             GRecStudio brings musicians, producers, and creators together in a cloud-based studio.
             Compose, record, and mix together, just like being in the same room.
           </p>
@@ -39,7 +39,7 @@ const Hero = () => {
                 Launch Studio
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-cyber-red/50 hover:bg-cyber-red/20 text-white px-6 py-6">
+            <Button asChild variant="outline" size="lg" className="border-cyber-red/50 hover:bg-cyber-red/20 text-cyber-text px-6 py-6">
               <Link to="/features">
                 See Features
               </Link>
