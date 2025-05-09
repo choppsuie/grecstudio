@@ -6,14 +6,16 @@ import { useTrackManager } from '@/hooks/useTrackManager';
 import StudioSidebar from './StudioSidebar';
 import TrackTimeline from './TrackTimeline';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Maximize, Minimize, AudioWaveform } from 'lucide-react';
 import DAWCanvas from './DAWCanvas';
+import MixerEffectsRack from './MixerEffectsRack';
 
 const StudioContent = () => {
   const { showMixer, isPlaying } = useStudio();
   const { tracks, updateTrack, addTrack } = useTrackManager();
   const [timelineZoom, setTimelineZoom] = useState(100);
   const [showDAWCanvas, setShowDAWCanvas] = useState(true);
+  const [showMixerEffects, setShowMixerEffects] = useState(false);
   
   const handleZoomChange = (newZoom: number) => {
     setTimelineZoom(Math.max(50, Math.min(200, newZoom)));
@@ -32,8 +34,29 @@ const StudioContent = () => {
                 className="h-7 py-0 px-3 text-xs flex items-center gap-1"
                 onClick={() => setShowDAWCanvas(!showDAWCanvas)}
               >
-                {showDAWCanvas ? "Hide" : "Show"} Instruments
+                {showDAWCanvas ? (
+                  <>
+                    <Minimize className="h-3.5 w-3.5 mr-1" />
+                    Hide Instruments
+                  </>
+                ) : (
+                  <>
+                    <Maximize className="h-3.5 w-3.5 mr-1" />
+                    Show Instruments
+                  </>
+                )}
               </Button>
+              
+              <Button 
+                variant={showMixerEffects ? "default" : "outline"}
+                size="sm"
+                className="h-7 py-0 px-3 text-xs flex items-center gap-1"
+                onClick={() => setShowMixerEffects(!showMixerEffects)}
+              >
+                <AudioWaveform className="h-3.5 w-3.5 mr-1" />
+                Mixer Effects
+              </Button>
+              
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -55,6 +78,12 @@ const StudioContent = () => {
           </div>
           
           {showDAWCanvas && <DAWCanvas />}
+          
+          {showMixerEffects && (
+            <div className="mb-4">
+              <MixerEffectsRack className="mt-2" />
+            </div>
+          )}
           
           <div className="flex flex-row">
             <div className="w-64 min-w-64 pr-2 flex flex-col">
