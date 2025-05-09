@@ -6,15 +6,15 @@ const StudioStatusBar = () => {
   const { isRecording, bpm } = useStudio();
 
   return (
-    <div className="h-6 bg-cyber-darker border-t border-cyber-purple/20 px-3 flex items-center text-xs text-cyber-text">
+    <div className="h-6 bg-gradient-to-r from-cyber-red to-cyber-purple px-3 flex items-center text-xs">
       <div className="flex-1">
         {isRecording ? (
-          <span className="text-cyber-red font-medium">● Recording...</span>
+          <span className="text-white font-medium">● Recording...</span>
         ) : (
-          <span className="text-cyber-text-muted">Ready</span>
+          <span className="text-white">Ready</span>
         )}
       </div>
-      <div className="flex space-x-4 text-cyber-text-muted">
+      <div className="flex space-x-4 text-white">
         <span>48000 Hz, Stereo</span>
         <span>{bpm} BPM</span>
         <span>4/4</span>
