@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -33,7 +32,7 @@ const MixerEffectsRack: React.FC<MixerEffectsRackProps> = ({ className }) => {
       <Tabs defaultValue="eq" className="w-full">
         <TabsList className="grid grid-cols-4 h-10 rounded-none bg-cyber-dark">
           <TabsTrigger value="eq" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none">
-            <Equalizer className="h-4 w-4 mr-2" />
+            <Sliders className="h-4 w-4 mr-2" />
             EQ
           </TabsTrigger>
           <TabsTrigger value="dynamics" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none">
@@ -41,11 +40,11 @@ const MixerEffectsRack: React.FC<MixerEffectsRackProps> = ({ className }) => {
             Dynamics
           </TabsTrigger>
           <TabsTrigger value="reverb" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none">
-            <Sliders className="h-4 w-4 mr-2" />
+            <Music className="h-4 w-4 mr-2" />
             Reverb
           </TabsTrigger>
           <TabsTrigger value="delay" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none">
-            <Music className="h-4 w-4 mr-2" />
+            <Disc className="h-4 w-4 mr-2" />
             Delay
           </TabsTrigger>
         </TabsList>
