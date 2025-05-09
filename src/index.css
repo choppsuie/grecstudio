@@ -127,6 +127,10 @@
   .grid-cols-16 {
     grid-template-columns: repeat(16, minmax(0, 1fr));
   }
+  
+  .grid-rows-36 {
+    grid-template-rows: repeat(36, minmax(0, 1fr));
+  }
 
   /* Track timeline grid for better visualization */
   .track-timeline {
@@ -134,6 +138,67 @@
       linear-gradient(to right, rgba(139, 92, 246, 0.05) 1px, transparent 1px),
       linear-gradient(to right, rgba(139, 92, 246, 0.02) 1px, transparent 1px);
     background-size: calc(100% / 16) 100%, calc(100% / 64) 100%;
+  }
+  
+  /* Shadow glow for active elements */
+  .shadow-glow {
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.7), 
+                0 0 12px rgba(139, 92, 246, 0.4);
+  }
+  
+  /* Neon text effect */
+  .neon-text {
+    text-shadow: 0 0 5px rgba(139, 92, 246, 0.7),
+                 0 0 10px rgba(139, 92, 246, 0.5);
+  }
+  
+  /* Flashing selection effect for active elements */
+  .flashing-box {
+    animation: flash-border 2s infinite;
+  }
+  
+  /* Cyber button with glow effect */
+  .cyber-button {
+    @apply relative overflow-hidden bg-cyber-purple/20 hover:bg-cyber-purple/30 
+           text-cyber-purple border border-cyber-purple/50 transition-all 
+           duration-300 ease-in-out;
+  }
+  
+  .cyber-button::before {
+    content: '';
+    @apply absolute inset-0 bg-cyber-purple/10 opacity-0 
+           transition-opacity duration-300;
+  }
+  
+  .cyber-button:hover::before {
+    @apply opacity-100;
+    animation: button-glow 2s infinite;
+  }
+  
+  /* Flip card animation */
+  .flip-card {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+  
+  .flip-card-inner {
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+  
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+  
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+  }
+  
+  .flip-card-back {
+    transform: rotateY(180deg);
   }
 }
 
@@ -154,3 +219,86 @@
     linear-gradient(to right, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
 }
 
+@keyframes flash-border {
+  0%, 100% { 
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); 
+  }
+  50% { 
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.8); 
+  }
+}
+
+@keyframes button-glow {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(139, 92, 246, 0.5); 
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.8); 
+  }
+}
+
+@keyframes waveform {
+  0%, 100% { 
+    height: 20%; 
+  }
+  25% { 
+    height: 80%; 
+  }
+  50% { 
+    height: 40%; 
+  }
+  75% { 
+    height: 60%; 
+  }
+}
+
+.waveform-bar {
+  animation: waveform 1.2s ease-in-out infinite;
+}
+
+.waveform-bar:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.waveform-bar:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.waveform-bar:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.waveform-bar:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+.waveform-bar:nth-child(6) {
+  animation-delay: 0.5s;
+}
+
+.waveform-bar:nth-child(7) {
+  animation-delay: 0.6s;
+}
+
+/* Liquid button effect */
+.btn-liquid {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-liquid::after {
+  content: "";
+  @apply absolute inset-0 bg-cyber-purple/10 -z-10;
+  transform: translate3d(-100%, 0, 0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.btn-liquid:hover::after {
+  transform: translate3d(0, 0, 0);
+}
+
+/* Modal backdrop with blur effect */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.5);
+}

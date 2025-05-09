@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Music, Volume2, Sliders, Equalizer, Disc, AudioWaveform } from 'lucide-react';
+import { Music, Volume2, Sliders, Disc, AudioWaveform, WaveSine } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface MixerEffectsRackProps {
@@ -28,22 +29,22 @@ const MixerEffectsRack: React.FC<MixerEffectsRackProps> = ({ className }) => {
   const [compRelease, setCompRelease] = useState(0.5);
 
   return (
-    <div className={cn("bg-cyber-darker border border-cyber-purple/20 rounded-md", className)}>
+    <div className={cn("bg-cyber-darker border border-cyber-purple/20 rounded-md overflow-hidden shadow-xl", className)}>
       <Tabs defaultValue="eq" className="w-full">
         <TabsList className="grid grid-cols-4 h-10 rounded-none bg-cyber-dark">
-          <TabsTrigger value="eq" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none">
+          <TabsTrigger value="eq" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none data-[state=active]:text-white">
             <Sliders className="h-4 w-4 mr-2" />
             EQ
           </TabsTrigger>
-          <TabsTrigger value="dynamics" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none">
+          <TabsTrigger value="dynamics" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none data-[state=active]:text-white">
             <AudioWaveform className="h-4 w-4 mr-2" />
             Dynamics
           </TabsTrigger>
-          <TabsTrigger value="reverb" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none">
+          <TabsTrigger value="reverb" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none data-[state=active]:text-white">
             <Music className="h-4 w-4 mr-2" />
             Reverb
           </TabsTrigger>
-          <TabsTrigger value="delay" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none">
+          <TabsTrigger value="delay" className="data-[state=active]:bg-cyber-purple/20 h-10 rounded-none data-[state=active]:text-white">
             <Disc className="h-4 w-4 mr-2" />
             Delay
           </TabsTrigger>
