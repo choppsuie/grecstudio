@@ -2,7 +2,6 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 import { useToast } from '@/hooks/use-toast';
-import { useSynth } from '@/hooks/useSynth';
 
 interface PlaybackContextType {
   isPlaying: boolean;
@@ -43,8 +42,8 @@ interface PlaybackProviderProps {
 
 export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) => {
   const { toast } = useToast();
-  const { playNote, stopNote, initialized } = useSynth();
   
+  // Remove useSynth dependency to avoid circular reference
   const [isPlaying, setIsPlaying] = useState(false);
   const [toneInitialized, setToneInitialized] = useState(false);
   const [bpm, setBpm] = useState(120);
@@ -111,7 +110,8 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
           description: "DAW is ready to play and record",
         });
         
-        return true;
+        // Return void to match the Promise<void> return type
+        return;
       } catch (error) {
         console.error("Failed to initialize Tone.js:", error);
         
@@ -121,16 +121,15 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
           variant: "destructive"
         });
         
-        return false;
+        // Return void to match the Promise<void> return type
+        return;
       }
     }
-    return true;
+    return;
   };
   
   const handlePlay = async () => {
-    const success = await initializeTone();
-    if (!success) return;
-    
+    await initializeTone();
     setIsPlaying(true);
     Tone.Transport.start();
   };
@@ -162,16 +161,12 @@ export const PlaybackProvider: React.FC<PlaybackProviderProps> = ({ children }) 
   
   const handleMIDINoteOn = (note: number, velocity: number = 100) => {
     console.log(`MIDI Note On: ${note}, velocity: ${velocity}`);
-    if (initialized) {
-      playNote(note, velocity);
-    }
+    // Removed synth.playNote handling - MIDI notes will be handled elsewhere
   };
   
   const handleMIDINoteOff = (note: number) => {
     console.log(`MIDI Note Off: ${note}`);
-    if (initialized) {
-      stopNote(note);
-    }
+    // Removed synth.stopNote handling - MIDI notes will be handled elsewhere
   };
 
   const value: PlaybackContextType = {

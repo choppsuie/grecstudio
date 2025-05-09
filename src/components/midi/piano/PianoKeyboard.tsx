@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from "react";
 import { useSynth } from "@/hooks/useSynth";
 import { usePianoKeyboardEvents } from "@/hooks/usePianoKeyboardEvents";
@@ -5,6 +6,7 @@ import Key from "./Key";
 import SynthControls from "./SynthControls";
 import { KEY_WIDTH, KEY_HEIGHT, BLACK_KEY_HEIGHT, BLACK_KEY_WIDTH, createNoteList, getNoteLabel, isWhiteKey } from "./utils";
 import * as Tone from "tone";
+import { usePatternRecorderContext } from "@/contexts/PatternRecorderContext";
 
 type PianoKeyboardProps = {
   onNoteOn?: (note: number, velocity: number) => void;
@@ -16,6 +18,9 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
   const [volume, setVolume] = useState<number>(80);
   const { playNote, stopNote, changeSynthType, currentSynth } = useSynth();
   const { notes, whiteNotes, blackNotes } = createNoteList();
+  
+  // Access pattern recorder context - now works with proper provider order
+  const { isRecording, recordNote, updateNoteDuration } = usePatternRecorderContext();
 
   // Press a key
   const handleDown = useCallback((note: number) => {
@@ -23,15 +28,25 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ onNoteOn, onNoteOff }) =>
       setActiveNotes((prev) => [...prev, note]);
       onNoteOn?.(note, 100);
       playNote(note, 100);
+      
+      // Record the note if recording is active
+      if (isRecording) {
+        recordNote(note, 100);
+      }
     }
-  }, [activeNotes, onNoteOn, playNote]);
+  }, [activeNotes, onNoteOn, playNote, isRecording, recordNote]);
 
   // Release a key
   const handleUp = useCallback((note: number) => {
     setActiveNotes((prev) => prev.filter((n) => n !== note));
     onNoteOff?.(note);
     stopNote(note);
-  }, [onNoteOff, stopNote]);
+    
+    // Update note duration if recording
+    if (isRecording) {
+      updateNoteDuration(note);
+    }
+  }, [onNoteOff, stopNote, isRecording, updateNoteDuration]);
 
   // Get keyboard event handlers from our custom hook
   const { handleKeyDown, handleKeyUp } = usePianoKeyboardEvents(handleDown, handleUp);

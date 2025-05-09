@@ -32,9 +32,11 @@ const Metronome = () => {
 
     // Schedule metronome clicks (4/4 time signature)
     const id = Tone.Transport.scheduleRepeat((time) => {
-      const position = Tone.Transport.position;
-      const bar = parseInt(position.split(':')[0]);
-      const beat = parseInt(position.split(':')[1]);
+      const position = Tone.Transport.position.toString();
+      // Parse the position string format "bars:quarters:sixteenths"
+      const parts = position.split(':');
+      const bar = parseInt(parts[0]);
+      const beat = parseInt(parts[1]);
       
       // First beat of the bar gets the high click
       if (beat === 0) {

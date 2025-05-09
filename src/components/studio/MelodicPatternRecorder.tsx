@@ -3,10 +3,9 @@ import React, { useState, useEffect } from "react";
 import { usePatternRecorderContext } from "@/contexts/PatternRecorderContext";
 import { useSynth } from "@/hooks/useSynth";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { 
-  Mic, Square, Save, PlayCircle, Trash2, 
+  Mic, Square, PlayCircle, Trash2, 
   CheckCircle, XCircle, EditIcon, Volume2 
 } from "lucide-react";
 import { cn } from "@/lib/utils";

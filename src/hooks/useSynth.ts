@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as Tone from "tone";
-import { usePatternRecorderContext } from "@/contexts/PatternRecorderContext";
 
 // Define types for our synths
 export type SynthType = "basic" | "fm" | "am" | "membrane" | "pluck";
@@ -17,7 +16,8 @@ export const useSynth = () => {
   const [currentSynth, setCurrentSynth] = useState<SynthType>("basic");
   const [synth, setSynth] = useState<SynthInstance | null>(null);
   const [initialized, setInitialized] = useState(false);
-  const { isRecording, recordNote, updateNoteDuration } = usePatternRecorderContext();
+  
+  // Remove PatternRecorderContext dependency
   const activeNotesRef = useRef<Set<number>>(new Set());
   const volumeRef = useRef<number>(-10);
 
@@ -220,15 +220,10 @@ export const useSynth = () => {
       
       // Keep track of active notes
       activeNotesRef.current.add(midiNote);
-      
-      // Record the note if recording is active
-      if (isRecording) {
-        recordNote(midiNote, velocity);
-      }
     } catch (error) {
       console.error("Failed to play note:", error);
     }
-  }, [synth, initialized, isRecording, recordNote]);
+  }, [synth, initialized]);
 
   // Stop a note
   const stopNote = useCallback((midiNote: number) => {
@@ -239,16 +234,11 @@ export const useSynth = () => {
       if (activeNotesRef.current.has(midiNote)) {
         synth.triggerRelease();
         activeNotesRef.current.delete(midiNote);
-        
-        // Update note duration if recording
-        if (isRecording) {
-          updateNoteDuration(midiNote);
-        }
       }
     } catch (error) {
       console.error("Failed to stop note:", error);
     }
-  }, [synth, initialized, isRecording, updateNoteDuration]);
+  }, [synth, initialized]);
 
   return {
     currentSynth,

@@ -12,14 +12,14 @@ interface StudioProviderProps {
 
 export const StudioProvider: React.FC<StudioProviderProps> = ({ children }) => {
   return (
-    <PlaybackProvider>
-      <RecordingProvider>
-        <ProjectProvider>
-          <PatternRecorderProvider>
+    <PatternRecorderProvider>
+      <PlaybackProvider>
+        <RecordingProvider>
+          <ProjectProvider>
             {children}
-          </PatternRecorderProvider>
-        </ProjectProvider>
-      </RecordingProvider>
-    </PlaybackProvider>
+          </ProjectProvider>
+        </RecordingProvider>
+      </PlaybackProvider>
+    </PatternRecorderProvider>
   );
 };
